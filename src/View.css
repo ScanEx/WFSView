@@ -1,0 +1,10 @@
+.scanex-wms-view > .header > * {
+    vertical-align: middle;
+} 
+.scanex-wms-view > .header {
+    padding: 5px;    
+}
+.scanex-wms-view > .header > .url {
+    width: 100%;
+    height: 20px;
+}

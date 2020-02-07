@@ -1,0 +1,9 @@
+.scanex-wms-view .scanex-wms-view-link .header > * {
+    vertical-align: middle;
+}
+.scanex-wms-view .scanex-wms-view-link .header .icon.close {
+    float: right;
+}
+.scanex-wms-view .scanex-wms-view-link .header .title {
+    overflow-wrap: break-word;
+}

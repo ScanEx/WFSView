@@ -1,0 +1,25 @@
+.scanex-wms-view .icon {
+    cursor: pointer;
+    display: inline-block;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 18px;
+    height: 18px;
+}
+.scanex-wms-view .layer .collapsed {
+    display: none;
+}
+.scanex-wms-view .layer .children {
+    padding-left: 45px;
+}
+.scanex-wms-view .layer .scanex-wms-view-visible,
+.scanex-wms-view .layer .scanex-wms-view-folder {
+    margin-right: 5px;
+}
+.scanex-wms-view .layer .scanex-wms-view-title {
+    cursor: pointer;
+    padding-bottom: 5px;
+}
+.scanex-wms-view .layer .scanex-wms-view-header td {
+    vertical-align: top;
+}
