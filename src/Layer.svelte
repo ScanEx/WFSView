@@ -4,10 +4,10 @@
 
     export let title = '';
     export let name = '';
-    export let layers = [];
+    export let children = [];
     export let visible = false;
     
-    $: hasChildren = Array.isArray(layers) && layers.length > 0;
+    $: hasChildren = Array.isArray(children) && children.length > 0;
 
     let expanded = false;
     let state = 0;
@@ -24,14 +24,14 @@
         else {
             state = -1;
         }
-        if (Array.isArray(layers) && (typeof (visible) !== 'undefined')) {
-            for (let i = 0; i < layers.length; i++) {
-                layers[i].visible = visible;
-                dispatch('change:visible', { ...layers[i], visible});
+        if (Array.isArray(children) && (typeof (visible) !== 'undefined')) {
+            for (let i = 0; i < children.length; i++) {
+                children[i].visible = visible;
+                dispatch('change:visible', { ...children[i], visible});
             }
         }
     }
-    function toggleChildren () {
+    function togglechildren () {
         expanded = !expanded;
     }
     function toggleVisibility () {                  
@@ -42,11 +42,11 @@
     
     function onChangeState (detail, i) {
         if (hasChildren) {
-            layers[i].visible = detail.visible;
-            if (layers.every(({visible}) => visible === true)) {
+            children[i].visible = detail.visible;
+            if (children.every(({visible}) => visible === true)) {
                 visible = true;
             }
-            else if (layers.every(({visible}) => visible === false)) {
+            else if (children.every(({visible}) => visible === false)) {
                 visible = false;
             }
             else {
@@ -61,7 +61,7 @@
 <div class="layer">    
     <table cellpadding="0" cellspacing="0"
         class="scanex-wms-view-header"
-        on:click|stopPropagation="{toggleChildren}">
+        on:click|stopPropagation="{togglechildren}">
         <tr>
             <td>
                 <i class="scanex-wms-view-visible icon" class:check-square="{state === 1}" class:square="{state === 0}" class:minus-square="{state === -1}" on:click|stopPropagation="{toggleVisibility}"></i>
@@ -74,9 +74,9 @@
             <td class="scanex-wms-view-title">{title}</td>            
         </tr>
     </table>
-    {#if Array.isArray(layers) && layers.length > 0}
+    {#if Array.isArray(children) && children.length > 0}
     <div class="children" class:collapsed="{!expanded}">
-        {#each layers as layer, i}
+        {#each children as layer, i}
         <svelte:self 
             {...layer}
             on:change:visible            

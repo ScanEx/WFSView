@@ -1,35 +1,25 @@
 const parse_node = node => {    
-    let r = {};    
-    for (const n of node.children) {
-        if(r[n.nodeName]) {
-            if(Array.isArray(r[n.nodeName])) {
-                r[n.nodeName].push(parse_node(n));
-            }
-            else {
-                r[n.nodeName] = [parse_node(n)];
-            }
-        }
-        else {
-            r[n.nodeName] = parse_node(n);
-        }        
+    let r = {
+        name: node.nodeName
+    };
+    const attributes = [];
+    for (const a of node.attributes) {
+        attributes.push(a.value);
     }
-    if (Object.keys(r).length === 0) {
-        let n = {[node.nodeName]: {
-            value: node.textContent
-        }};
-        const attributes = [];
-        for (const a of node.attributes) {
-            attributes.push (a.value);
-        }
-        if (attributes.length > 0) {
-            n.attributes = attributes;
-        }
-        return n;
-    } 
+    if (attributes.length) {
+        r.attributes = attributes;
+    }
+    const children = [];
+    for (const n of node.children) {
+        children.push(parse_node(n));
+    }
+    if (children.length) {
+        r.children = children;
+    }
     else {
-        return {[node.nodeName]: r};
-    }   
-    
+        r.value = node.textContent;
+    }
+    return r;
 };
 
 const parse = xml => {
