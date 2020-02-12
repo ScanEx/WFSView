@@ -6,14 +6,14 @@ import json from 'rollup-plugin-json';
 import css from 'rollup-plugin-css-porter';
 import babel from 'rollup-plugin-babel';
 // import cpy from 'rollup-plugin-cpy';
-import { terser } from 'rollup-plugin-terser';
+// import { terser } from 'rollup-plugin-terser';
 import pkg from './package.json';
 
 export default [
     {
         input: './src/index.js',
         output: {
-            file: pkg.main,
+            file: pkg.browser,
             format: 'iife',
             sourcemap: true,
             name: 'WFSV',
@@ -33,7 +33,32 @@ export default [
                 include: ['src/**'],
                 exclude: 'node_modules/**'
             }),
-            terser(),
+            // terser(),
+        ]
+    },
+    {
+        input: './src/View.svelte',
+        output: {
+            file: pkg.main,
+            format: 'cjs',
+            sourcemap: true,            
+        },
+        plugins: [
+            svelte(),        
+            resolve(),
+            commonjs(),
+            json(),
+            css({dest: 'dist/main.css', minified: true}),
+            eslint(),
+            // cpy({
+            //     files: ['src/*.png'],
+            //     dest: 'wwwroot'
+            // }),
+            babel({
+                include: ['src/**'],
+                exclude: 'node_modules/**'
+            }),
+            // terser(),
         ]
     }
 ];

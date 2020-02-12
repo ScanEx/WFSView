@@ -1,8 +1,9 @@
 {
-  "name": "scanex-wfs-view",
+  "name": "scanex-wmfs-view",
   "version": "1.0.0",
   "description": "",
-  "main": "public/main.js",
+  "main": "dist/main.cjs.js",
+  "browser": "public/main.js",
   "scripts": {
     "build": "npm run svg & rollup -c",
     "svg": "node build-svg.js",
@@ -12,7 +13,9 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "scanex-translations": "git+https://github.com/Scanex/Translations.git"
+  },
   "devDependencies": {
     "@babel/cli": "^7.8.3",
     "@babel/core": "^7.8.3",

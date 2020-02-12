@@ -11,6 +11,7 @@
 
     let expanded = false;
     let state = 0;
+    let infoVisible = false;
 
     const dispatch = createEventDispatcher();
     
@@ -31,7 +32,7 @@
             }
         }
     }
-    function togglechildren () {
+    function toggleChildren () {
         expanded = !expanded;
     }
     function toggleVisibility () {                  
@@ -54,31 +55,26 @@
             }
             dispatch('change:state', {title, name, visible});
         }
-    }    
-
+    }
+    
 </script>
 
 <div class="layer">    
-    <table cellpadding="0" cellspacing="0"
-        class="scanex-wms-view-header"
-        on:click|stopPropagation="{togglechildren}">
-        <tr>
-            <td>
-                <i class="scanex-wms-view-visible icon" class:check-square="{state === 1}" class:square="{state === 0}" class:minus-square="{state === -1}" on:click|stopPropagation="{toggleVisibility}"></i>
-            </td>
-            {#if hasChildren}
-            <td>
-                <i class="scanex-wms-view-folder icon" class:folder-open="{expanded}" class:folder="{!expanded}"></i>
-            </td>
+    <div class="header"        
+        on:mouseenter|stopPropagation="{() => infoVisible = true}"
+        on:mouseleave|stopPropagation="{() => infoVisible = false}"
+        on:click|stopPropagation="{toggleChildren}">                
+            <i class="scanex-svc-view-visible icon" class:check-square="{state === 1}" class:square="{state === 0}" class:minus-square="{state === -1}" on:click|stopPropagation="{toggleVisibility}"></i>            
+            {#if hasChildren}        
+                <i class="scanex-svc-view-folder icon" class:folder-open="{expanded}" class:folder="{!expanded}"></i>            
             {/if}            
-            <td class="scanex-wms-view-title">{title}</td>            
-        </tr>
-    </table>
+            {title}
+    </div>
     {#if Array.isArray(children) && children.length > 0}
     <div class="children" class:collapsed="{!expanded}">
         {#each children as layer, i}
         <svelte:self 
-            {...layer}
+            {...layer}            
             on:change:visible            
             on:change:state="{({detail}) => onChangeState(detail, i)}"/>
         {/each}

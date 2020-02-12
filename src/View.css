@@ -1,10 +1,20 @@
-.scanex-wms-view > .header > * {
+.scanex-svc-view > .header > * {
     vertical-align: middle;
-} 
-.scanex-wms-view > .header {
-    padding: 5px;    
 }
-.scanex-wms-view > .header > .url {
+.scanex-svc-view > .header > .url {
     width: 100%;
     height: 20px;
+}
+.scanex-svc-view .hidden {
+    visibility: hidden;
+}
+.scanex-svc-view .icon,
+.scanex-svc-view-info .icon {
+    cursor: pointer;
+    display: inline-block;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 18px;
+    height: 18px;
+    margin-right: 5px;
 }

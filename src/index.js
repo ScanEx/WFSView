@@ -1,9 +1,8 @@
-import WmsView from './View.svelte';
-import './icons.css';
+import WsView from './View.svelte';
 import './index.css';
 
 window.addEventListener('load', () => {
-   const app = new WmsView({
+   const app = new WsView({
       target: document.body,      
    });
    app.$on('change:visible', ({detail}) => {

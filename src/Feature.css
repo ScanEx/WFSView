@@ -1,0 +1,11 @@
+.scanex-svc-view .feature .scanex-svc-view-visible {    
+    float: left;
+}
+.scanex-svc-view .feature {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
+.scanex-svc-view .feature > * {
+    vertical-align: top;
+}

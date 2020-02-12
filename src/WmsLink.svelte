@@ -10,14 +10,14 @@
 
 </script>
 
-<div class="scanex-wms-view-link">
+<div class="scanex-svc-view-link">
     <div class="header">
-        <label class="title">{title}</label>
-        <i class="icon close" on:click|stopPropagation="{() => dispatch('close')}"></i>
+        <i class="icon close" on:click="{() => dispatch('close')}"></i>
+        {title}
     </div>
     <div class="content">
         {#each layers as layer}
-        <Layer {...layer} on:change:visible />
+        <Layer {...layer} on:change:visible on:show:info />
         {/each}
     </div>    
 </div>
