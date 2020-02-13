@@ -49,7 +49,7 @@
         });
         lnk.$on('close', () => lnk.$destroy());
         lnk.$on('change:visible', ({detail}) => {
-            console.log(detail);
+            dispatch('change:visible', {...detail, url: value});
         });
     }
 
@@ -72,7 +72,7 @@
         });
         lnk.$on('close', () => lnk.$destroy());
         lnk.$on('change:visible', ({detail}) => {
-            console.log(detail);
+            dispatch('change:visible', {...detail, url: value});
         });
     }
 

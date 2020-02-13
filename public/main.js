@@ -602,7 +602,7 @@
     	return child_ctx;
     }
 
-    // (28:8) {#each features as f}
+    // (32:8) {#each features as f}
     function create_each_block(ctx) {
     	let current;
     	const feature_spread_levels = [/*f*/ ctx[5]];
@@ -613,7 +613,7 @@
     	}
 
     	const feature = new Feature({ props: feature_props });
-    	feature.$on("change:visible", /*change_visible_handler*/ ctx[4]);
+    	feature.$on("change:visible", /*onChangeVisible*/ ctx[3]);
 
     	return {
     		c() {
@@ -721,12 +721,12 @@
     			}
 
     			current = true;
-    			dispose = listen(i, "click", /*click_handler*/ ctx[3]);
+    			dispose = listen(i, "click", /*click_handler*/ ctx[4]);
     		},
     		p(ctx, [dirty]) {
     			if (!current || dirty & /*title*/ 1) set_data(t2, /*title*/ ctx[0]);
 
-    			if (dirty & /*features*/ 2) {
+    			if (dirty & /*features, onChangeVisible*/ 10) {
     				each_value = /*features*/ ctx[1];
     				let i;
 
@@ -783,18 +783,19 @@
     	let { title = "" } = $$props;
     	let { features = [] } = $$props;
     	const dispatch = createEventDispatcher();
-    	const click_handler = () => dispatch("close");
 
-    	function change_visible_handler(event) {
-    		bubble($$self, event);
+    	function onChangeVisible({ detail }) {
+    		dispatch("change:visible", { ...detail, service: "WFS" });
     	}
+
+    	const click_handler = () => dispatch("close");
 
     	$$self.$set = $$props => {
     		if ("title" in $$props) $$invalidate(0, title = $$props.title);
     		if ("features" in $$props) $$invalidate(1, features = $$props.features);
     	};
 
-    	return [title, features, dispatch, click_handler, change_visible_handler];
+    	return [title, features, dispatch, onChangeVisible, click_handler];
     }
 
     class WFS extends SvelteComponent {
@@ -1219,14 +1220,14 @@
 
     function get_each_context$2(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[6] = list[i];
+    	child_ctx[5] = list[i];
     	return child_ctx;
     }
 
-    // (28:8) {#each layers as layer}
+    // (32:8) {#each layers as layer}
     function create_each_block$2(ctx) {
     	let current;
-    	const layer_spread_levels = [/*layer*/ ctx[6]];
+    	const layer_spread_levels = [/*layer*/ ctx[5]];
     	let layer_props = {};
 
     	for (let i = 0; i < layer_spread_levels.length; i += 1) {
@@ -1234,8 +1235,7 @@
     	}
 
     	const layer = new Layer({ props: layer_props });
-    	layer.$on("change:visible", /*change_visible_handler*/ ctx[4]);
-    	layer.$on("show:info", /*show_info_handler*/ ctx[5]);
+    	layer.$on("change:visible", /*onChangeVisible*/ ctx[3]);
 
     	return {
     		c() {
@@ -1247,7 +1247,7 @@
     		},
     		p(ctx, dirty) {
     			const layer_changes = (dirty & /*layers*/ 2)
-    			? get_spread_update(layer_spread_levels, [get_spread_object(/*layer*/ ctx[6])])
+    			? get_spread_update(layer_spread_levels, [get_spread_object(/*layer*/ ctx[5])])
     			: {};
 
     			layer.$set(layer_changes);
@@ -1343,12 +1343,12 @@
     			}
 
     			current = true;
-    			dispose = listen(i, "click", /*click_handler*/ ctx[3]);
+    			dispose = listen(i, "click", /*click_handler*/ ctx[4]);
     		},
     		p(ctx, [dirty]) {
     			if (!current || dirty & /*title*/ 1) set_data(t2, /*title*/ ctx[0]);
 
-    			if (dirty & /*layers*/ 2) {
+    			if (dirty & /*layers, onChangeVisible*/ 10) {
     				each_value = /*layers*/ ctx[1];
     				let i;
 
@@ -1405,29 +1405,19 @@
     	let { title = "" } = $$props;
     	let { layers = [] } = $$props;
     	const dispatch = createEventDispatcher();
+
+    	function onChangeVisible({ detail }) {
+    		dispatch("change:visible", { ...detail, service: "WMS" });
+    	}
+
     	const click_handler = () => dispatch("close");
-
-    	function change_visible_handler(event) {
-    		bubble($$self, event);
-    	}
-
-    	function show_info_handler(event) {
-    		bubble($$self, event);
-    	}
 
     	$$self.$set = $$props => {
     		if ("title" in $$props) $$invalidate(0, title = $$props.title);
     		if ("layers" in $$props) $$invalidate(1, layers = $$props.layers);
     	};
 
-    	return [
-    		title,
-    		layers,
-    		dispatch,
-    		click_handler,
-    		change_visible_handler,
-    		show_info_handler
-    	];
+    	return [title, layers, dispatch, onChangeVisible, click_handler];
     }
 
     class WMS extends SvelteComponent {
@@ -1838,7 +1828,7 @@
     		lnk.$on("close", () => lnk.$destroy());
 
     		lnk.$on("change:visible", ({ detail }) => {
-    			console.log(detail);
+    			dispatch("change:visible", { ...detail, url: value });
     		});
     	}
 
@@ -1863,7 +1853,7 @@
     		lnk.$on("close", () => lnk.$destroy());
 
     		lnk.$on("change:visible", ({ detail }) => {
-    			console.log(detail);
+    			dispatch("change:visible", { ...detail, url: value });
     		});
     	}
 

@@ -6,7 +6,11 @@
     export let title = '';
     export let layers = [];
 
-    const dispatch = createEventDispatcher();    
+    const dispatch = createEventDispatcher();   
+    
+    function onChangeVisible({detail}) {
+        dispatch('change:visible', {...detail, service: 'WMS'});
+    }
 
 </script>
 
@@ -26,7 +30,7 @@
     </div>    
     <div class="content">
         {#each layers as layer}
-        <Layer {...layer} on:change:visible on:show:info />
+        <Layer {...layer} on:change:visible="{onChangeVisible}" />
         {/each}
     </div>    
 </div>
