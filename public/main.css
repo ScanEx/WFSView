@@ -10,9 +10,10 @@
 .scanex-svc-view > .header > button {
     border: 1px solid #4682B4;
     padding: 3px;
-    color: #4682B4;    
+    color: #4682B4;
+    background-color: #FFFFFF;
     border-radius: 4px;
-    font-weight: bold;
+    font-weight: bold;    
     cursor: pointer;
 }
 .scanex-svc-view .hidden {
@@ -49,6 +50,7 @@
     border: 1px solid #778899;
     margin-top: 5px;
     margin-bottom: 5px;
+    background-color: #FFFAF0;
 }
 .scanex-svc-view .scanex-svc-view-link > .header {
     padding: 5px;
@@ -65,7 +67,7 @@
     padding: 5px;
     border: none;    
     white-space: nowrap;
-    
+    font-style: italic;
 }
 .scanex-svc-view .scanex-svc-view-link > .header .title {
     padding-left: 10px;
@@ -77,7 +79,7 @@
 }
 .scanex-svc-view-dialog {
     position: absolute;
-    width: 300px;
+    width: 400px;
     background-color: #F0F8FF;
     font-family: sans-serif;
 }
@@ -106,6 +108,18 @@
 .scanex-svc-view-dialog > .content > input {
     border: 1px solid #87CEFA;
     width: 100%;
+    height: 25px;
+}
+.scanex-svc-view .feature .scanex-svc-view-visible {    
+    float: left;
+}
+.scanex-svc-view .feature {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
+.scanex-svc-view .feature > * {
+    vertical-align: top;
 }
 .scanex-svc-view .layer .collapsed {
     display: none;
@@ -127,16 +141,5 @@
     cursor: pointer;
 }
 .scanex-svc-view .layer .header > * {
-    vertical-align: top;
-}
-.scanex-svc-view .feature .scanex-svc-view-visible {    
-    float: left;
-}
-.scanex-svc-view .feature {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    cursor: pointer;
-}
-.scanex-svc-view .feature > * {
     vertical-align: top;
 }

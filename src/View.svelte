@@ -1,12 +1,12 @@
 <script>
     import './View.css';    
-    import xml2json from './xml2json.js';
     import {toLayers, toFeatures} from './wmfs.js';
     import WFS from './WFS.svelte';    
     import WMS from './WMS.svelte';
     import Dialog from './Dialog.svelte';
     import T from 'scanex-translations';
     import {createEventDispatcher, onMount} from 'svelte';
+    import send from './request.js';
     import './icons.css';
 
     const translate = T.getText.bind(T);
@@ -30,30 +30,6 @@
     let info;
     let proxy = '//maps.kosmosnimki.ru/proxy';
 
-    function addLink (url) {        
-        return new Promise((resolve, reject) => {
-            try {
-                const xhr = new XMLHttpRequest();            
-                xhr.addEventListener('load', () => {
-                    if (xhr.status === 200) {                         
-                        resolve (xml2json(xhr.responseXML));
-                    }
-                    else {
-                        reject(xhr);
-                    }
-                });
-                xhr.addEventListener('error', e => {
-                    reject(e);
-                });        
-                xhr.open('GET', `${proxy}?${encodeURIComponent(url)}`);
-                xhr.send();                     
-            }
-            catch (e) {
-                reject(e);
-            }       
-        });
-    }
-
     async function addwfs (value) {
         const url = new URL(value);
         if (!url.searchParams.has('service')) {
@@ -65,7 +41,7 @@
         if (!url.searchParams.has('version')) {
             url.searchParams.append('version', '1.3.0');
         }
-        const data = await addLink (url.toString());
+        const data = await send (url.toString());
         const {title, features} = toFeatures(data);
         const lnk = new WFS({
             target: links,
@@ -88,7 +64,7 @@
         if (!url.searchParams.has('version')) {
             url.searchParams.append('version', '1.3.0');
         }
-        const data = await addLink (url.toString());
+        const data = await send (url.toString());
         const {title, layers} = toLayers(data);
         const lnk = new WMS({
             target: links,
@@ -153,9 +129,7 @@
                 }
             }
         });                      
-    }
-
-    
+    }    
 </script>
 <div class="scanex-svc-view">
     <div class="header" bind:this="{header}">

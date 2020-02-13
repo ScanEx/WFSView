@@ -11,7 +11,7 @@ import pkg from './package.json';
 
 export default [
     {
-        input: './src/index.js',
+        input: './src/browser.js',
         output: {
             file: pkg.browser,
             format: 'iife',
@@ -37,7 +37,7 @@ export default [
         ]
     },
     {
-        input: './src/View.svelte',
+        input: './src/main.js',
         output: {
             file: pkg.main,
             format: 'cjs',

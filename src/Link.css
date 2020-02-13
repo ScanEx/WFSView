@@ -3,6 +3,7 @@
     border: 1px solid #778899;
     margin-top: 5px;
     margin-bottom: 5px;
+    background-color: #FFFAF0;
 }
 .scanex-svc-view .scanex-svc-view-link > .header {
     padding: 5px;
@@ -19,7 +20,7 @@
     padding: 5px;
     border: none;    
     white-space: nowrap;
-    
+    font-style: italic;
 }
 .scanex-svc-view .scanex-svc-view-link > .header .title {
     padding-left: 10px;

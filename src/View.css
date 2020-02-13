@@ -7,9 +7,10 @@
 .scanex-svc-view > .header > button {
     border: 1px solid #4682B4;
     padding: 3px;
-    color: #4682B4;    
+    color: #4682B4;
+    background-color: #FFFFFF;
     border-radius: 4px;
-    font-weight: bold;
+    font-weight: bold;    
     cursor: pointer;
 }
 .scanex-svc-view .hidden {
