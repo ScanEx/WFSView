@@ -1,9 +1,16 @@
+.scanex-svc-view {
+    font-family: sans-serif;
+}
 .scanex-svc-view > .header > * {
     vertical-align: middle;
 }
-.scanex-svc-view > .header > .url {
-    width: 100%;
-    height: 20px;
+.scanex-svc-view > .header > button {
+    border: none;
+    background-color: #4682B4;
+    color: #FFFFFF;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
 }
 .scanex-svc-view .hidden {
     visibility: hidden;

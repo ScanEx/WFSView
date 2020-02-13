@@ -2,8 +2,8 @@
     import './View.css';    
     import xml2json from './xml2json.js';
     import {toLayers, toFeatures} from './wmfs.js';
-    import WfsLink from './WfsLink.svelte';    
-    import WmsLink from './WmsLink.svelte';
+    import WFS from './WFS.svelte';    
+    import WMS from './WMS.svelte';
     import Dialog from './Dialog.svelte';
     import T from 'scanex-translations';
     import {createEventDispatcher, onMount} from 'svelte';
@@ -67,7 +67,7 @@
         }
         const data = await addLink (url.toString());
         const {title, features} = toFeatures(data);
-        const lnk = new WfsLink({
+        const lnk = new WFS({
             target: links,
             props: { features, title }
         });
@@ -90,7 +90,7 @@
         }
         const data = await addLink (url.toString());
         const {title, layers} = toLayers(data);
-        const lnk = new WmsLink({
+        const lnk = new WMS({
             target: links,
             props: { layers, title }
         });
@@ -103,7 +103,7 @@
     let header;
     let dlg;
 
-    function wfs () {
+    function getwfs () {
         if (dlg) {
             dlg.$destroy();
         }
@@ -129,7 +129,7 @@
         });                      
     }
 
-    function wms () {
+    function getwms () {
         if (dlg) {
             dlg.$destroy();
         }
@@ -159,8 +159,8 @@
 </script>
 <div class="scanex-svc-view">
     <div class="header" bind:this="{header}">
-        <button on:click|stopPropagation="{wfs}">WFS</button>
-        <button on:click|stopPropagation="{wms}">WMS</button>
+        <button on:click|stopPropagation="{getwfs}">WFS</button>
+        <button on:click|stopPropagation="{getwms}">WMS</button>
     </div>
     <div class="links" bind:this="{links}">
     </div>
