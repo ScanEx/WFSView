@@ -9,12 +9,15 @@
     visibility: hidden;
 }
 .scanex-svc-view .icon,
-.scanex-svc-view-info .icon {
+.scanex-svc-view-dialog .icon {
     cursor: pointer;
     display: inline-block;
     background-position: center;
     background-repeat: no-repeat;
     width: 18px;
     height: 18px;
+}
+.scanex-svc-view .scanex-svc-view-folder,
+.scanex-svc-view .scanex-svc-view-visible {
     margin-right: 5px;
 }

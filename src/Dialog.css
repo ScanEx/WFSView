@@ -1,0 +1,32 @@
+.scanex-svc-view-dialog {
+    position: absolute;
+    width: 300px;
+    background-color: #F0F8FF;
+    font-family: sans-serif;
+}
+.scanex-svc-view-dialog .icon.close {    
+    float: right;
+}
+.scanex-svc-view-dialog > .header {
+    border: 1px solid #778899;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    white-space: nowrap;
+    background-color: #B0C4DE;
+    cursor: default;
+}
+.scanex-svc-view-dialog > .content {
+    border-left: 1px solid #778899;
+    border-right: 1px solid #778899;
+    border-bottom: 1px solid #778899;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+.scanex-svc-view-dialog > .header,
+.scanex-svc-view-dialog > .content {
+    padding: 5px;
+}
+.scanex-svc-view-dialog > .content > input {
+    border: 1px solid #87CEFA;
+    width: 100%;
+}
