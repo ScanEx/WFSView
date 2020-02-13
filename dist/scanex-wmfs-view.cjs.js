@@ -1966,6 +1966,6 @@ class View extends SvelteComponent {
 	}
 }
 
-exports.Request = send;
 exports.View = View;
+exports.send = send;
 //# sourceMappingURL=scanex-wmfs-view.cjs.js.map

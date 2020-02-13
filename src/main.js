@@ -1,4 +1,4 @@
 import View from './View.svelte';
-import Request from './request.js';
+import send from './request.js';
 
-export {View, Request};
+export {View, send};
