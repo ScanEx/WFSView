@@ -5,9 +5,9 @@
     vertical-align: middle;
 }
 .scanex-svc-view > .header > button {
-    border: none;
-    background-color: #4682B4;
-    color: #FFFFFF;
+    border: 1px solid #4682B4;
+    padding: 3px;
+    color: #4682B4;    
     border-radius: 4px;
     font-weight: bold;
     cursor: pointer;
