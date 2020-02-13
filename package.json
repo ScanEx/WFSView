@@ -2,7 +2,7 @@
   "name": "scanex-wmfs-view",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/main.cjs.js",
+  "main": "dist/scanex-wmfs-view.cjs.js",
   "browser": "public/main.js",
   "scripts": {
     "build": "npm run svg & rollup -c",

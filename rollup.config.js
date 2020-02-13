@@ -48,7 +48,7 @@ export default [
             resolve(),
             commonjs(),
             json(),
-            css({dest: 'dist/main.css', minified: true}),
+            css({dest: 'dist/scanex-wmfs-view.css', minified: true}),
             eslint(),
             // cpy({
             //     files: ['src/*.png'],

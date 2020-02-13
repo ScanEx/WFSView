@@ -1584,4 +1584,4 @@ class View extends SvelteComponent {
 }
 
 module.exports = View;
-//# sourceMappingURL=main.cjs.js.map
+//# sourceMappingURL=scanex-wmfs-view.cjs.js.map
