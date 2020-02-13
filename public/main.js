@@ -374,7 +374,7 @@
       let r = {};
 
       for (const n of node.children) {
-        r[uncap(n.name)] = n.value;
+        r[uncap(n.localName)] = n.value;
       }
 
       return r;
@@ -385,17 +385,17 @@
 
       for (const n of node.children) {
         const {
-          name
+          localName
         } = n;
 
-        if (name === 'Title') {
+        if (localName === 'Title') {
           r.title = n.value;
         }
 
-        switch (name) {
+        switch (localName) {
           case 'Title':
           case 'Name':
-            r[uncap(name)] = n.value;
+            r[uncap(localName)] = n.value;
             break;
 
           case 'Layer':
@@ -438,9 +438,9 @@
       children
     }) => {
       return children.reduce((a, n) => {
-        switch (n.name) {
+        switch (n.localName) {
           case 'Capability':
-            n.children.filter(x => x.name === 'Layer').map(toLayer).forEach(x => a.layers = a.layers ? a.layers.concat(x) : [x]);
+            n.children.filter(x => x.localName === 'Layer').map(toLayer).forEach(x => a.layers = a.layers ? a.layers.concat(x) : [x]);
             break;
 
           case 'Service':
@@ -459,15 +459,15 @@
 
       for (const n of node.children) {
         const {
-          name
+          localName
         } = n;
 
-        switch (name) {
+        switch (localName) {
           case 'Title':
           case 'Name':
           case 'Abstract':
           case 'DefaultSRS':
-            r[uncap(name)] = n.value;
+            r[uncap(localName)] = n.value;
             break;
 
           case 'OtherSRS':
@@ -493,12 +493,12 @@
     }) => {
       return children.reduce((a, n) => {
         const {
-          name
+          localName
         } = n;
 
-        switch (name) {
+        switch (localName) {
           case 'FeatureTypeList':
-            n.children.filter(x => x.name === 'FeatureType').map(toFeature).forEach(x => a.features = a.features ? a.features.concat(x) : [x]);
+            n.children.filter(x => x.localName === 'FeatureType').map(toFeature).forEach(x => a.features = a.features ? a.features.concat(x) : [x]);
             break;
 
           case 'ServiceIdentification':
@@ -1674,14 +1674,18 @@
     var serviceProxy = "//maps.kosmosnimki.ru/proxy";
 
     const parse_node = node => {
+      const {
+        nodeName,
+        localName
+      } = node;
       let r = {
-        name: node.localName
+        name: nodeName,
+        localName
       };
       const attributes = {};
 
       for (const a of node.attributes) {
-        const value = parseFloat(a.value);
-        attributes[a.name] = isNaN(value) ? a.value : value;
+        attributes[a.name] = a.value;
       }
 
       if (Object.keys(attributes).length) {
@@ -1697,8 +1701,7 @@
       if (children.length) {
         r.children = children;
       } else if (node.textContent) {
-        const value = parseFloat(node.textContent);
-        r.value = isNaN(value) ? node.textContent : value;
+        r.value = node.textContent;
       }
 
       return r;

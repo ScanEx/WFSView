@@ -1,11 +1,9 @@
-const parse_node = node => {    
-    let r = {
-        name: node.localName
-    };
+const parse_node = node => {
+    const {nodeName, localName} = node;
+    let r = { name: nodeName, localName };
     const attributes = {};
-    for (const a of node.attributes) {        
-        const value = parseFloat(a.value);
-        attributes[a.name] = isNaN(value) ? a.value : value;
+    for (const a of node.attributes) {                
+        attributes[a.name] = a.value;
     }
     if (Object.keys(attributes).length) {
         r.attributes = attributes;
@@ -17,9 +15,8 @@ const parse_node = node => {
     if (children.length) {
         r.children = children;
     }
-    else if (node.textContent) {
-        const value = parseFloat(node.textContent);
-        r.value = isNaN(value) ? node.textContent : value;
+    else if (node.textContent) {        
+        r.value = node.textContent;
     }
     return r;
 };

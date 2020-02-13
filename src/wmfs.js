@@ -3,7 +3,7 @@ const uncap = str => `${str.substr(0, 1).toLowerCase()}${str.substr(1)}`;
 const parseNode = node => {
     let r = {};
     for (const n of node.children) {        
-        r[uncap(n.name)] = n.value;
+        r[uncap(n.localName)] = n.value;
     }
     return r;
 };
@@ -11,14 +11,14 @@ const parseNode = node => {
 const toLayer = node => {
     let r = {};
     for (const n of node.children) {
-        const {name} = n;
-        if (name === 'Title') {
+        const {localName} = n;
+        if (localName === 'Title') {
             r.title = n.value;
         }
-        switch(name) {
+        switch(localName) {
             case 'Title':                
             case 'Name':
-                r[uncap(name)] = n.value;
+                r[uncap(localName)] = n.value;
                 break;
             case 'Layer':
                 if (r.children) {
@@ -56,10 +56,10 @@ const toLayer = node => {
 
 const toLayers = ({children}) => {
     return children.reduce((a, n) => {
-        switch(n.name) {
+        switch(n.localName) {
             case 'Capability':                                        
                 n.children
-                .filter(x => x.name === 'Layer')
+                .filter(x => x.localName === 'Layer')
                 .map(toLayer)
                 .forEach(x => a.layers = a.layers ? a.layers.concat(x) : [x]);
                 break;
@@ -76,13 +76,13 @@ const toLayers = ({children}) => {
 const toFeature = node => {
     let r = {};
     for (const n of node.children) {
-        const {name} = n;        
-        switch(name) {
+        const {localName} = n;        
+        switch(localName) {
             case 'Title':
             case 'Name':            
             case 'Abstract':
             case 'DefaultSRS':
-                r[uncap(name)] = n.value;
+                r[uncap(localName)] = n.value;
                 break;
             case 'OtherSRS':
                 if (r.otherSRS) {
@@ -104,11 +104,11 @@ const toFeature = node => {
 
 const toFeatures = ({children}) => {
     return children.reduce((a, n) => {
-        const {name} = n;
-        switch(name) {
+        const {localName} = n;
+        switch(localName) {
             case 'FeatureTypeList':
                 n.children
-                .filter(x => x.name === 'FeatureType')
+                .filter(x => x.localName === 'FeatureType')
                 .map(toFeature)
                 .forEach(x => a.features = a.features ? a.features.concat(x) : [x]);
                 break;
