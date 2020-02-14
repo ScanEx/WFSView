@@ -7,6 +7,8 @@
     import T from 'scanex-translations';
     import {createEventDispatcher, onMount} from 'svelte';
     import send from './request.js';
+    import L from 'leaflet';
+    import parseFeature from './gml.js';
     import './icons.css';
 
     const translate = T.getText.bind(T);
@@ -26,9 +28,70 @@
         },
     });
 
-    let links;
-    let info;
-    let proxy = '//maps.kosmosnimki.ru/proxy';
+    let linksContainer;
+    let links = {};
+
+    export let map;
+
+    function closeLink (url) {        
+        const link = links[url];
+        if (link) {
+            Object.keys(link).forEach(k => {
+                const {layers} = link[k];
+                if (Array.isArray (layers) && layers.length) {
+                    layers.forEach(layer => layer.remove());
+                }
+            });
+        }
+    }
+
+    function drawFeature (feature) {
+        try {
+            const {geometry} = parseFeature(feature);
+            const layer = L.geoJSON(geometry);
+            layer.addTo(map);
+            return layer;
+        }
+        catch(e) {
+            console.log(e);
+            return null;
+        } 
+    }   
+
+    function drawFeatures(data) {
+        if (data.name === 'wfs:FeatureCollection') {
+            return data.children.filter(({name}) => name === 'gml:featureMember').map(drawFeature).filter(e => e);
+        }
+        else {
+            return [];
+        }
+    }
+
+    async function getFeature (name, service, visible, url) {
+        if (map) {            
+            const link = links[url];
+            if (visible) {                
+                if (link && link[name]) {                    
+                    const {data, layers} = link[name];
+                    if (Array.isArray (layers) && layers.length) {
+                        layers.forEach(layer => layer.addTo(map));
+                    }                    
+                }
+                else {                    
+                    const data = await send(`${url}?request=GetFeature&service=${service}&version=1.0.0&typeName=ms:${name}`);
+                    const layers = drawFeatures(data);
+                    links[url] = links[url] || {};
+                    links[url][name] = { data, layers };
+                }                
+            }
+            else if (link && link[name]) {                
+                const {data, layers} = link[name];
+                if (Array.isArray (layers) && layers.length) {
+                    layers.forEach(layer => layer.remove());
+                }
+            }
+        }
+    }
 
     async function addwfs (value) {
         const url = new URL(value);
@@ -44,12 +107,16 @@
         const data = await send (url.toString());
         const {title, features} = toFeatures(data);
         const lnk = new WFS({
-            target: links,
+            target: linksContainer,
             props: { features, title }
         });
-        lnk.$on('close', () => lnk.$destroy());
-        lnk.$on('change:visible', ({detail}) => {
-            dispatch('change:visible', {...detail, url: value});
+        lnk.$on('close', () => {
+            lnk.$destroy();
+            closeLink(value);
+        });
+        lnk.$on('change:visible', async ({detail}) => {
+            const {name, service, visible} = detail;
+            await getFeature(name, service, visible, value);
         });
     }
 
@@ -67,12 +134,16 @@
         const data = await send (url.toString());
         const {title, layers} = toLayers(data);
         const lnk = new WMS({
-            target: links,
+            target: linksContainer,
             props: { layers, title }
         });
-        lnk.$on('close', () => lnk.$destroy());
-        lnk.$on('change:visible', ({detail}) => {
-            dispatch('change:visible', {...detail, url: value});
+        lnk.$on('close', () => {
+            lnk.$destroy();
+            closeLink(value);
+        });
+        lnk.$on('change:visible', async ({detail}) => {   
+            const {name, service, visible} = detail;
+            await getFeature(name, service, visible, value);                   
         });
     }
 
@@ -136,6 +207,6 @@
         <button on:click|stopPropagation="{getwfs}">WFS</button>
         <button on:click|stopPropagation="{getwms}">WMS</button>
     </div>
-    <div class="links" bind:this="{links}">
+    <div class="links" bind:this="{linksContainer}">
     </div>
 </div>

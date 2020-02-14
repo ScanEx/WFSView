@@ -17,7 +17,11 @@ export default [
             format: 'iife',
             sourcemap: true,
             name: 'WFSV',
+            globals: {
+                leaflet: 'L',     
+            }
         },
+        external: ['leaflet'],
         plugins: [
             svelte(),        
             resolve(),
@@ -41,8 +45,12 @@ export default [
         output: {
             file: pkg.main,
             format: 'cjs',
-            sourcemap: true,            
+            sourcemap: true, 
+            globals: {
+                leaflet: 'L',     
+            }           
         },
+        external: ['leaflet'],
         plugins: [
             svelte(),        
             resolve(),
