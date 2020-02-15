@@ -1,7 +1,6 @@
 import svelte from 'rollup-plugin-svelte';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
-import { eslint } from 'rollup-plugin-eslint';
 import json from 'rollup-plugin-json';
 import css from 'rollup-plugin-css-porter';
 import babel from 'rollup-plugin-babel';
@@ -21,18 +20,12 @@ export default [
                 leaflet: 'L',     
             }
         },
-        external: ['leaflet'],
         plugins: [
             svelte(),        
             resolve(),
             commonjs(),
             json(),
-            css({dest: 'public/main.css', minified: true}),
-            eslint(),
-            // cpy({
-            //     files: ['src/*.png'],
-            //     dest: 'wwwroot'
-            // }),
+            css({dest: 'public/main.css', minified: true}),            
             babel({
                 include: ['src/**'],
                 exclude: 'node_modules/**'
@@ -56,12 +49,7 @@ export default [
             resolve(),
             commonjs(),
             json(),
-            css({dest: 'dist/scanex-wmfs-view.css', minified: true}),
-            eslint(),
-            // cpy({
-            //     files: ['src/*.png'],
-            //     dest: 'wwwroot'
-            // }),
+            css({dest: 'dist/scanex-wmfs-view.css', minified: true}),            
             babel({
                 include: ['src/**'],
                 exclude: 'node_modules/**'

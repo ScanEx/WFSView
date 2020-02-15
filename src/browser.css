@@ -1,3 +1,10 @@
 .scanex-svc-view {
     width: 350px;
 }
+#sidebar, #map {
+    float: left;
+}
+#map {
+    width: 600px;
+    height: 100vh;
+}

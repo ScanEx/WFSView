@@ -107,17 +107,6 @@
     width: 100%;
     height: 25px;
 }
-.scanex-svc-view .feature .scanex-svc-view-visible {    
-    float: left;
-}
-.scanex-svc-view .feature {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    cursor: pointer;
-}
-.scanex-svc-view .feature > * {
-    vertical-align: top;
-}
 .scanex-svc-view .layer .collapsed {
     display: none;
 }
@@ -138,5 +127,16 @@
     cursor: pointer;
 }
 .scanex-svc-view .layer .header > * {
+    vertical-align: top;
+}
+.scanex-svc-view .feature .scanex-svc-view-visible {    
+    float: left;
+}
+.scanex-svc-view .feature {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+}
+.scanex-svc-view .feature > * {
     vertical-align: top;
 }
