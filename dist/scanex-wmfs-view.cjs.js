@@ -2078,7 +2078,14 @@ function instance$5($$self, $$props, $$invalidate) {
 
 		lnk.$on("change:visible", async ({ detail }) => {
 			const { name, service, visible } = detail;
-			await getFeature(name, service, visible, value);
+
+			try {
+				dispatch("request:start");
+				await getFeature(name, service, visible, value);
+				dispatch("request:end");
+			} catch(e) {
+				dispatch("request:error");
+			}
 		});
 	}
 
@@ -2111,10 +2118,19 @@ function instance$5($$self, $$props, $$invalidate) {
 		});
 
 		lnk.$on("change:visible", async ({ detail }) => {
-		}); // await getFeature(name, service, visible, value);
-	}
+			
+		}); // const {name, service, visible} = detail;
+		// try {
+		//     dispatch('request:start');
+		//     await getFeature(name, service, visible, value);
+	} //     dispatch('request:end');
+	// }
 
+	// catch(e) {
+	//     dispatch('request:error');
+	// }
 	let header;
+
 	let dlg;
 
 	function getwfs() {
@@ -2137,11 +2153,11 @@ function instance$5($$self, $$props, $$invalidate) {
 
 			if (value) {
 				try {
-					dispatch("link:start");
+					dispatch("request:start");
 					await addwfs(value);
-					dispatch("link:end");
+					dispatch("request:end");
 				} catch(e) {
-					dispatch("link:error");
+					dispatch("request:error");
 				}
 			}
 		});
@@ -2167,11 +2183,11 @@ function instance$5($$self, $$props, $$invalidate) {
 
 			if (value) {
 				try {
-					dispatch("link:start");
+					dispatch("request:start");
 					await addwms(value);
-					dispatch("link:end");
+					dispatch("request:end");
 				} catch(e) {
-					dispatch("link:error");
+					dispatch("request:error");
 				}
 			}
 		});

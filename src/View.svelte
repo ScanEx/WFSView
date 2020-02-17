@@ -118,9 +118,16 @@
             lnk.$destroy();
             closeLink(value);
         });
-        lnk.$on('change:visible', async ({detail}) => {
+        lnk.$on('change:visible', async ({detail}) => {            
             const {name, service, visible} = detail;
-            await getFeature(name, service, visible, value);
+            try {
+                dispatch('request:start');
+                await getFeature(name, service, visible, value);
+                dispatch('request:end');
+            }
+            catch(e) {
+                dispatch('request:error');
+            } 
         });
     }
 
@@ -146,8 +153,15 @@
             closeLink(value);
         });
         lnk.$on('change:visible', async ({detail}) => {   
-            const {name, service, visible} = detail;
-            // await getFeature(name, service, visible, value);
+            // const {name, service, visible} = detail;
+            // try {
+            //     dispatch('request:start');
+            //     await getFeature(name, service, visible, value);
+            //     dispatch('request:end');
+            // }
+            // catch(e) {
+            //     dispatch('request:error');
+            // }
         });
     }
 
@@ -169,12 +183,12 @@
             dlg.$destroy();
             if (value) {
                 try {
-                    dispatch('link:start');
+                    dispatch('request:start');
                     await addwfs(value);
-                    dispatch('link:end');
+                    dispatch('request:end');
                 }
                 catch(e) {
-                    dispatch('link:error');
+                    dispatch('request:error');
                 }             
             }
         });                      
@@ -195,12 +209,12 @@
             dlg.$destroy();
             if (value) {
                 try {
-                    dispatch('link:start');
+                    dispatch('request:start');
                     await addwms(value);
-                    dispatch('link:end');
+                    dispatch('request:end');
                 }
                 catch(e) {
-                    dispatch('link:error');
+                    dispatch('request:error');
                 }
             }
         });                      

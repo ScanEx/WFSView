@@ -15815,7 +15815,7 @@
     window.L = exports;
 
     })));
-    //# sourceMappingURL=leaflet-src.js.map
+
     });
 
     function parseLinearRing(linearRing) {
@@ -16161,7 +16161,14 @@
 
     		lnk.$on("change:visible", async ({ detail }) => {
     			const { name, service, visible } = detail;
-    			await getFeature(name, service, visible, value);
+
+    			try {
+    				dispatch("request:start");
+    				await getFeature(name, service, visible, value);
+    				dispatch("request:end");
+    			} catch(e) {
+    				dispatch("request:error");
+    			}
     		});
     	}
 
@@ -16194,10 +16201,19 @@
     		});
 
     		lnk.$on("change:visible", async ({ detail }) => {
-    		}); // await getFeature(name, service, visible, value);
-    	}
+    			
+    		}); // const {name, service, visible} = detail;
+    		// try {
+    		//     dispatch('request:start');
+    		//     await getFeature(name, service, visible, value);
+    	} //     dispatch('request:end');
+    	// }
 
+    	// catch(e) {
+    	//     dispatch('request:error');
+    	// }
     	let header;
+
     	let dlg;
 
     	function getwfs() {
@@ -16220,11 +16236,11 @@
 
     			if (value) {
     				try {
-    					dispatch("link:start");
+    					dispatch("request:start");
     					await addwfs(value);
-    					dispatch("link:end");
+    					dispatch("request:end");
     				} catch(e) {
-    					dispatch("link:error");
+    					dispatch("request:error");
     				}
     			}
     		});
@@ -16250,11 +16266,11 @@
 
     			if (value) {
     				try {
-    					dispatch("link:start");
+    					dispatch("request:start");
     					await addwms(value);
-    					dispatch("link:end");
+    					dispatch("request:end");
     				} catch(e) {
-    					dispatch("link:error");
+    					dispatch("request:error");
     				}
     			}
     		});
