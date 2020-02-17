@@ -1994,8 +1994,17 @@ function instance$5($$self, $$props, $$invalidate) {
 
 	function drawFeature(feature) {
 		try {
-			const { geometry } = parseFeature(feature);
-			const layer = L.geoJSON(geometry);
+			const { geometry, properties } = parseFeature(feature);
+
+			const layer = L.geoJSON(geometry, {
+				style: x => {
+					return {
+						color: properties["ms:border_color"],
+						weight: 1
+					};
+				}
+			});
+
 			layer.addTo(map);
 			return layer;
 		} catch(e) {
@@ -2102,9 +2111,7 @@ function instance$5($$self, $$props, $$invalidate) {
 		});
 
 		lnk.$on("change:visible", async ({ detail }) => {
-			const { name, service, visible } = detail;
-			await getFeature(name, service, visible, value);
-		});
+		}); // await getFeature(name, service, visible, value);
 	}
 
 	let header;

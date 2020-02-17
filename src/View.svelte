@@ -47,8 +47,12 @@
 
     function drawFeature (feature) {
         try {
-            const {geometry} = parseFeature(feature);
-            const layer = L.geoJSON(geometry);
+            const {geometry, properties} = parseFeature(feature);
+            const layer = L.geoJSON(geometry, {
+                style: x => {                    
+                    return {color: properties['ms:border_color'], weight: 1};
+                },
+            });
             layer.addTo(map);
             return layer;
         }
@@ -143,7 +147,7 @@
         });
         lnk.$on('change:visible', async ({detail}) => {   
             const {name, service, visible} = detail;
-            await getFeature(name, service, visible, value);                   
+            // await getFeature(name, service, visible, value);
         });
     }
 

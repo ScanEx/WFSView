@@ -15815,7 +15815,7 @@
     window.L = exports;
 
     })));
-
+    //# sourceMappingURL=leaflet-src.js.map
     });
 
     function parseLinearRing(linearRing) {
@@ -16077,8 +16077,17 @@
 
     	function drawFeature(feature) {
     		try {
-    			const { geometry } = parseFeature(feature);
-    			const layer = leafletSrc.geoJSON(geometry);
+    			const { geometry, properties } = parseFeature(feature);
+
+    			const layer = leafletSrc.geoJSON(geometry, {
+    				style: x => {
+    					return {
+    						color: properties["ms:border_color"],
+    						weight: 1
+    					};
+    				}
+    			});
+
     			layer.addTo(map);
     			return layer;
     		} catch(e) {
@@ -16185,9 +16194,7 @@
     		});
 
     		lnk.$on("change:visible", async ({ detail }) => {
-    			const { name, service, visible } = detail;
-    			await getFeature(name, service, visible, value);
-    		});
+    		}); // await getFeature(name, service, visible, value);
     	}
 
     	let header;
