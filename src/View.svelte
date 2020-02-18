@@ -117,10 +117,11 @@
             const link = links[url];
             if (visible) {                
                 if (link && link[name]) {                    
-                    const {layers} = link[name];
-                    if (Array.isArray (layers) && layers.length) {
+                    const {layers, visible} = link[name];
+                    if (Array.isArray (layers) && layers.length && !visible) {
                         layers.forEach(layer => layer.addTo(map));
-                    }                    
+                        links[url][name].visible = true;
+                    }
                 }
                 else {
                     const bounds = map.getBounds();  
@@ -155,13 +156,14 @@
                     layer.addTo(map);
                     map.fitBounds([[bbox.maxy, bbox.minx],[bbox.miny, bbox.maxx]]);
                     links[url] = links[url] || {};
-                    links[url][name] = { layers: [layer] };
+                    links[url][name] = { layers: [layer], visible };
                 }
             }
             else if (link && link[name]) {                
-                const {layers} = link[name];
-                if (Array.isArray (layers) && layers.length) {
+                const {layers, visible} = link[name];
+                if (Array.isArray (layers) && layers.length && visible) {
                     layers.forEach(layer => layer.remove());
+                    links[url][name].visible = false;
                 }
             }
         }
