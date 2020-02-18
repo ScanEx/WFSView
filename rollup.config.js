@@ -37,8 +37,9 @@ export default [
         input: './src/main.js',
         output: {
             file: pkg.main,
-            format: 'cjs',
+            format: 'umd',
             sourcemap: true, 
+            name: 'WFSV',
             globals: {
                 leaflet: 'L',     
             }           

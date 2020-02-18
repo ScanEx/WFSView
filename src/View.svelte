@@ -6,7 +6,7 @@
     import Dialog from './Dialog.svelte';
     import T from 'scanex-translations';
     import {createEventDispatcher, onMount} from 'svelte';
-    import {getxml, getmap} from './request.js';
+    import getxml from './request.js';
     import xml2json from './xml2json.js';
     import L from 'leaflet';
     import parseFeatures from './gml.js';

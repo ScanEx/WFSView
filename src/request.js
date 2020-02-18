@@ -22,11 +22,4 @@ const getxml = url => new Promise((resolve, reject) => {
     }       
 });
 
-const getmap = url => new Promise((resolve, reject) => {
-    fetch(`${serviceProxy}?${encodeURIComponent(url)}`)
-    .then(response => response.blob())
-    .then(blob => resolve(blob))
-    .catch(e => reject(e));
-});
-
-export {getxml, getmap};
+export default getxml;
