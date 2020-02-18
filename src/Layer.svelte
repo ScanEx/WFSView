@@ -6,6 +6,8 @@
     export let name = '';
     export let children = [];
     export let visible = false;
+    export let crs = [];
+    export let exGeographicBoundingBox;
     
     $: hasChildren = Array.isArray(children) && children.length > 0;
 
@@ -37,7 +39,7 @@
     }
     function toggleVisibility () {                  
         visible = !visible;
-        dispatch('change:visible', {title, name, visible});
+        dispatch('change:visible', {title, name, exGeographicBoundingBox, crs, visible});
         dispatch('change:state', {title, name, visible});        
     }    
     

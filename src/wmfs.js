@@ -8,6 +8,16 @@ const parseNode = node => {
     return r;
 };
 
+const parseExGeographicBoundingBox = node => {
+    const { eastBoundLongitude,  northBoundLatitude, southBoundLatitude, westBoundLongitude } = parseNode(node);
+    return { 
+        eastBoundLongitude: parseFloat(eastBoundLongitude), 
+        northBoundLatitude: parseFloat(northBoundLatitude),
+        southBoundLatitude: parseFloat(southBoundLatitude),
+        westBoundLongitude: parseFloat(westBoundLongitude)
+    };
+};
+
 const toLayer = node => {
     let r = {};
     for (const n of node.children) {
@@ -37,7 +47,7 @@ const toLayer = node => {
                 }
                 break;
             case 'EX_GeographicBoundingBox':
-                r.exGeographicBoundingBox = parseNode(n);
+                r.exGeographicBoundingBox = parseExGeographicBoundingBox(n);
                 break;
             case 'BoundingBox':
                 if (r.boundingBoxes) {

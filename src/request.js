@@ -1,12 +1,11 @@
 import {serviceProxy} from './config.json';
-import xml2json from './xml2json.js';
 
-const send = url => new Promise((resolve, reject) => {
+const getxml = url => new Promise((resolve, reject) => {
     try {
         const xhr = new XMLHttpRequest();            
         xhr.addEventListener('load', () => {
             if (xhr.status === 200) {                         
-                resolve (xml2json(xhr.responseXML));
+                resolve (xhr.responseXML);
             }
             else {
                 reject(xhr);
@@ -23,4 +22,11 @@ const send = url => new Promise((resolve, reject) => {
     }       
 });
 
-export default send;
+const getmap = url => new Promise((resolve, reject) => {
+    fetch(`${serviceProxy}?${encodeURIComponent(url)}`)
+    .then(response => response.blob())
+    .then(blob => resolve(blob))
+    .catch(e => reject(e));
+});
+
+export {getxml, getmap};

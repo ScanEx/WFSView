@@ -8,10 +8,6 @@
 
     const dispatch = createEventDispatcher();   
     
-    function onChangeVisible({detail}) {
-        dispatch('change:visible', {...detail, service: 'WMS'});
-    }
-
 </script>
 
 <div class="scanex-svc-view-link">
@@ -30,7 +26,7 @@
     </div>    
     <div class="content">
         {#each layers as layer}
-        <Layer {...layer} on:change:visible="{onChangeVisible}" />
+        <Layer {...layer} on:change:visible />
         {/each}
     </div>    
 </div>

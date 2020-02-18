@@ -383,6 +383,21 @@ const parseNode = node => {
   return r;
 };
 
+const parseExGeographicBoundingBox = node => {
+  const {
+    eastBoundLongitude,
+    northBoundLatitude,
+    southBoundLatitude,
+    westBoundLongitude
+  } = parseNode(node);
+  return {
+    eastBoundLongitude: parseFloat(eastBoundLongitude),
+    northBoundLatitude: parseFloat(northBoundLatitude),
+    southBoundLatitude: parseFloat(southBoundLatitude),
+    westBoundLongitude: parseFloat(westBoundLongitude)
+  };
+};
+
 const toLayer = node => {
   let r = {};
 
@@ -420,7 +435,7 @@ const toLayer = node => {
         break;
 
       case 'EX_GeographicBoundingBox':
-        r.exGeographicBoundingBox = parseNode(n);
+        r.exGeographicBoundingBox = parseExGeographicBoundingBox(n);
         break;
 
       case 'BoundingBox':
@@ -812,12 +827,12 @@ class WFS extends SvelteComponent {
 
 function get_each_context$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[16] = list[i];
-	child_ctx[18] = i;
+	child_ctx[18] = list[i];
+	child_ctx[20] = i;
 	return child_ctx;
 }
 
-// (68:12) {#if hasChildren}
+// (70:12) {#if hasChildren}
 function create_if_block_1(ctx) {
 	let i;
 
@@ -846,7 +861,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (73:4) {#if Array.isArray(children) && children.length > 0}
+// (75:4) {#if Array.isArray(children) && children.length > 0}
 function create_if_block(ctx) {
 	let div;
 	let current;
@@ -938,13 +953,13 @@ function create_if_block(ctx) {
 	};
 }
 
-// (75:8) {#each children as layer, i}
+// (77:8) {#each children as layer, i}
 function create_each_block$1(ctx) {
 	let current;
-	const layer_spread_levels = [/*layer*/ ctx[16]];
+	const layer_spread_levels = [/*layer*/ ctx[18]];
 
 	function change_state_handler(...args) {
-		return /*change_state_handler*/ ctx[15](/*i*/ ctx[18], ...args);
+		return /*change_state_handler*/ ctx[17](/*i*/ ctx[20], ...args);
 	}
 
 	let layer_props = {};
@@ -954,7 +969,7 @@ function create_each_block$1(ctx) {
 	}
 
 	const layer = new Layer({ props: layer_props });
-	layer.$on("change:visible", /*change_visible_handler*/ ctx[14]);
+	layer.$on("change:visible", /*change_visible_handler*/ ctx[16]);
 	layer.$on("change:state", change_state_handler);
 
 	return {
@@ -969,7 +984,7 @@ function create_each_block$1(ctx) {
 			ctx = new_ctx;
 
 			const layer_changes = (dirty & /*children*/ 1)
-			? get_spread_update(layer_spread_levels, [get_spread_object(/*layer*/ ctx[16])])
+			? get_spread_update(layer_spread_levels, [get_spread_object(/*layer*/ ctx[18])])
 			: {};
 
 			layer.$set(layer_changes);
@@ -1035,8 +1050,8 @@ function create_fragment$2(ctx) {
 
 			dispose = [
 				listen(i, "click", stop_propagation(/*toggleVisibility*/ ctx[7])),
-				listen(div0, "mouseenter", stop_propagation(/*mouseenter_handler*/ ctx[12])),
-				listen(div0, "mouseleave", stop_propagation(/*mouseleave_handler*/ ctx[13])),
+				listen(div0, "mouseenter", stop_propagation(/*mouseenter_handler*/ ctx[14])),
+				listen(div0, "mouseleave", stop_propagation(/*mouseleave_handler*/ ctx[15])),
 				listen(div0, "click", stop_propagation(/*toggleChildren*/ ctx[6]))
 			];
 		},
@@ -1112,6 +1127,8 @@ function instance$2($$self, $$props, $$invalidate) {
 	let { name = "" } = $$props;
 	let { children = [] } = $$props;
 	let { visible = false } = $$props;
+	let { crs = [] } = $$props;
+	let { exGeographicBoundingBox } = $$props;
 	let expanded = false;
 	let state = 0;
 	let infoVisible = false;
@@ -1123,7 +1140,15 @@ function instance$2($$self, $$props, $$invalidate) {
 
 	function toggleVisibility() {
 		$$invalidate(9, visible = !visible);
-		dispatch("change:visible", { title, name, visible });
+
+		dispatch("change:visible", {
+			title,
+			name,
+			exGeographicBoundingBox,
+			crs,
+			visible
+		});
+
 		dispatch("change:state", { title, name, visible });
 	}
 
@@ -1157,6 +1182,8 @@ function instance$2($$self, $$props, $$invalidate) {
 		if ("name" in $$props) $$invalidate(10, name = $$props.name);
 		if ("children" in $$props) $$invalidate(0, children = $$props.children);
 		if ("visible" in $$props) $$invalidate(9, visible = $$props.visible);
+		if ("crs" in $$props) $$invalidate(11, crs = $$props.crs);
+		if ("exGeographicBoundingBox" in $$props) $$invalidate(12, exGeographicBoundingBox = $$props.exGeographicBoundingBox);
 	};
 
 	let hasChildren;
@@ -1198,6 +1225,8 @@ function instance$2($$self, $$props, $$invalidate) {
 		onChangeState,
 		visible,
 		name,
+		crs,
+		exGeographicBoundingBox,
 		dispatch,
 		mouseenter_handler,
 		mouseleave_handler,
@@ -1214,7 +1243,9 @@ class Layer extends SvelteComponent {
 			title: 1,
 			name: 10,
 			children: 0,
-			visible: 9
+			visible: 9,
+			crs: 11,
+			exGeographicBoundingBox: 12
 		});
 	}
 }
@@ -1227,7 +1258,7 @@ function get_each_context$2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (32:8) {#each layers as layer}
+// (28:8) {#each layers as layer}
 function create_each_block$2(ctx) {
 	let current;
 	const layer_spread_levels = [/*layer*/ ctx[5]];
@@ -1238,7 +1269,7 @@ function create_each_block$2(ctx) {
 	}
 
 	const layer = new Layer({ props: layer_props });
-	layer.$on("change:visible", /*onChangeVisible*/ ctx[3]);
+	layer.$on("change:visible", /*change_visible_handler*/ ctx[4]);
 
 	return {
 		c() {
@@ -1346,12 +1377,12 @@ function create_fragment$3(ctx) {
 			}
 
 			current = true;
-			dispose = listen(i, "click", /*click_handler*/ ctx[4]);
+			dispose = listen(i, "click", /*click_handler*/ ctx[3]);
 		},
 		p(ctx, [dirty]) {
 			if (!current || dirty & /*title*/ 1) set_data(t2, /*title*/ ctx[0]);
 
-			if (dirty & /*layers, onChangeVisible*/ 10) {
+			if (dirty & /*layers*/ 2) {
 				each_value = /*layers*/ ctx[1];
 				let i;
 
@@ -1408,19 +1439,18 @@ function instance$3($$self, $$props, $$invalidate) {
 	let { title = "" } = $$props;
 	let { layers = [] } = $$props;
 	const dispatch = createEventDispatcher();
-
-	function onChangeVisible({ detail }) {
-		dispatch("change:visible", { ...detail, service: "WMS" });
-	}
-
 	const click_handler = () => dispatch("close");
+
+	function change_visible_handler(event) {
+		bubble($$self, event);
+	}
 
 	$$self.$set = $$props => {
 		if ("title" in $$props) $$invalidate(0, title = $$props.title);
 		if ("layers" in $$props) $$invalidate(1, layers = $$props.layers);
 	};
 
-	return [title, layers, dispatch, onChangeVisible, click_handler];
+	return [title, layers, dispatch, click_handler, change_visible_handler];
 }
 
 class WMS extends SvelteComponent {
@@ -1676,6 +1706,26 @@ var scanexTranslations_cjs = index;
 
 var serviceProxy = "//maps.kosmosnimki.ru/proxy";
 
+const getxml = url => new Promise((resolve, reject) => {
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', () => {
+      if (xhr.status === 200) {
+        resolve(xhr.responseXML);
+      } else {
+        reject(xhr);
+      }
+    });
+    xhr.addEventListener('error', e => {
+      reject(e);
+    });
+    xhr.open('GET', `${serviceProxy}?${encodeURIComponent(url)}`);
+    xhr.send();
+  } catch (e) {
+    reject(e);
+  }
+});
+
 const parse_node = node => {
   const {
     nodeName,
@@ -1715,130 +1765,139 @@ const parse = xml => {
   return parse_node(root);
 };
 
-const send = url => new Promise((resolve, reject) => {
-  try {
-    const xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', () => {
-      if (xhr.status === 200) {
-        resolve(parse(xhr.responseXML));
-      } else {
-        reject(xhr);
-      }
-    });
-    xhr.addEventListener('error', e => {
-      reject(e);
-    });
-    xhr.open('GET', `${serviceProxy}?${encodeURIComponent(url)}`);
-    xhr.send();
-  } catch (e) {
-    reject(e);
-  }
-});
-
 function parseLinearRing(linearRing) {
   const {
     children
   } = linearRing;
-  return children.reduce((a, e) => {
-    switch (e.name) {
-      case 'gml:coordinates':
-        a = a.concat(parseCoordinates(e));
-        break;
-    }
 
-    return a;
-  }, []);
+  if (Array.isArray(children)) {
+    return children.reduce((a, e) => {
+      switch (e.name) {
+        case 'gml:coordinates':
+          a = a.concat(parseCoordinates(e));
+          break;
+      }
+
+      return a;
+    }, []);
+  } else {
+    return null;
+  }
 }
 
 function parseBoundary(outerBoundary) {
   const {
     children
   } = outerBoundary;
-  return children.reduce((a, e) => {
-    switch (e.name) {
-      case 'gml:LinearRing':
-        a = a.concat(parseLinearRing(e));
-        break;
-    }
 
-    return a;
-  }, []);
+  if (Array.isArray(children)) {
+    return children.reduce((a, e) => {
+      switch (e.name) {
+        case 'gml:LinearRing':
+          a = a.concat(parseLinearRing(e));
+          break;
+      }
+
+      return a;
+    }, []);
+  } else {
+    return null;
+  }
 }
 
 function parsePolygon(polygon) {
   const {
     children
   } = polygon;
-  const coordinates = children.reduce((a, e) => {
-    switch (e.name) {
-      case 'gml:outerBoundaryIs':
-        a.push(parseBoundary(e));
-        break;
 
-      case 'gml:innerBoundaryIs':
-        a.push(parseBoundary(e));
-        break;
-    }
+  if (Array.isArray(children)) {
+    const coordinates = children.reduce((a, e) => {
+      switch (e.name) {
+        case 'gml:outerBoundaryIs':
+          a.push(parseBoundary(e));
+          break;
 
-    return a;
-  }, []);
-  return {
-    type: 'Polygon',
-    coordinates
-  };
+        case 'gml:innerBoundaryIs':
+          a.push(parseBoundary(e));
+          break;
+      }
+
+      return a;
+    }, []);
+    return {
+      type: 'Polygon',
+      coordinates
+    };
+  } else {
+    return null;
+  }
 }
 
 function parsePolygonMember(polygon) {
   const {
     children
   } = polygon;
-  return children.reduce((a, e) => {
+
+  if (Array.isArray(children) && children.length === 1) {
+    const [e] = children;
+
     switch (e.name) {
       case 'gml:Polygon':
-        a.push(parsePolygon(e).coordinates);
-        break;
-    }
+        return parsePolygon(e).coordinates;
 
-    return a;
-  }, []);
+      default:
+        return null;
+    }
+  } else {
+    return null;
+  }
 }
 
 function parseMultiPolygon(multiPolygon) {
   const {
     children
   } = multiPolygon;
-  const coordinates = children.reduce((a, e) => {
-    switch (e.name) {
-      case 'gml:polygonMember':
-        a.push(parsePolygonMember(e));
-        break;
-    }
 
-    return a;
-  }, []);
-  return {
-    type: 'MultiPolygon',
-    coordinates
-  };
+  if (Array.isArray(children)) {
+    const coordinates = children.reduce((a, e) => {
+      switch (e.name) {
+        case 'gml:polygonMember':
+          a.push(parsePolygonMember(e));
+          break;
+      }
+
+      return a;
+    }, []);
+    return {
+      type: 'MultiPolygon',
+      coordinates
+    };
+  } else {
+    return null;
+  }
 }
 
 function parseGeometry(geometry) {
   const {
     children
   } = geometry;
-  return children.reduce((a, e) => {
+
+  if (Array.isArray(children) && children.length === 1) {
+    const [e] = children;
+
     switch (e.name) {
       case 'gml:Polygon':
-        a = parsePolygon(e);
-        break;
+        return parsePolygon(e);
 
       case 'gml:MultiPolygon':
-        a = parseMultiPolygon(e);
-        break;
-    }
+        return parseMultiPolygon(e);
 
-    return a;
-  }, {});
+      default:
+        return null;
+    }
+  } else {
+    return null;
+  }
 }
 
 const parseCoordinates = coordinates => coordinates.value.split(/\s+/g).filter(e => e).map(e => e.split(',').map(v => parseFloat(v)));
@@ -1847,61 +1906,116 @@ function parseBox(box) {
   const {
     children
   } = box;
-  return children.reduce((a, e) => {
+
+  if (Array.isArray(children)) {
+    const [e] = children;
+
     switch (e.name) {
       case 'gml:coordinates':
         return parseCoordinates(e).reduce((b, p) => b.concat(p), []);
 
       default:
-        return a;
+        return null;
     }
-  }, []);
+  } else {
+    return null;
+  }
 }
 
 function parseBoundedBy(boundedBy) {
   const {
     children
   } = boundedBy;
-  return children.reduce((a, e) => {
+
+  if (Array.isArray(children) && children.length === 1) {
+    const [e] = children;
+
     switch (e.name) {
       case 'gml:Box':
         return parseBox(e);
 
       default:
-        return a;
+        return null;
     }
-  }, []);
+  } else {
+    return null;
+  }
 }
 
 function parseFeature(feature) {
   const {
     name,
     children
-  } = feature.children[0];
-  return children.reduce((a, e) => {
-    switch (e.name) {
-      case 'gml:boundedBy':
+  } = feature;
+
+  if (Array.isArray(children)) {
+    return children.reduce((a, e) => {
+      switch (e.name) {
+        case 'gml:boundedBy':
+          a.bbox = parseBoundedBy(e);
+          break;
+
+        case 'ms:msGeometry':
+          a.geometry = parseGeometry(e);
+          break;
+
+        case 'ms:id':
+        case 'ms:layer':
+        case 'ms:border_color':
+          a.properties[e.name] = e.value;
+          break;
+      }
+
+      return a;
+    }, {
+      type: 'Feature',
+      properties: {
+        name
+      }
+    });
+  } else {
+    return null;
+  }
+}
+
+function parseFeatureMember(featureMember) {
+  const {
+    children
+  } = featureMember;
+
+  if (Array.isArray(children) && children.length === 1) {
+    const [e] = children;
+    return parseFeature(e);
+  } else {
+    return null;
+  }
+}
+
+function parseFeatures(featureCollection) {
+  const {
+    children
+  } = featureCollection;
+
+  if (Array.isArray(children)) {
+    return children.reduce((a, e) => {
+      if (e.name === 'gml:featureMember') {
+        const f = parseFeatureMember(e);
+
+        if (f) {
+          a.features.push(f);
+        }
+      } else if (e.name === 'gml:boundedBy') {
         a.bbox = parseBoundedBy(e);
-        break;
+      }
 
-      case 'ms:msGeometry':
-        a.geometry = parseGeometry(e);
-        break;
-
-      case 'ms:id':
-      case 'ms:layer':
-      case 'ms:border_color':
-        a.properties[e.name] = e.value;
-        break;
-    }
-
-    return a;
-  }, {
-    type: 'Feature',
-    properties: {
-      name
-    }
-  });
+      return a;
+    }, {
+      type: 'FeatureCollection',
+      features: []
+    });
+  } else {
+    return null;
+  }
 }
 
 /* src\View.svelte generated by Svelte v3.18.1 */
@@ -1937,10 +2051,10 @@ function create_fragment$5(ctx) {
 			append(div0, button0);
 			append(div0, t1);
 			append(div0, button1);
-			/*div0_binding*/ ctx[15](div0);
+			/*div0_binding*/ ctx[16](div0);
 			append(div2, t3);
 			append(div2, div1);
-			/*div1_binding*/ ctx[16](div1);
+			/*div1_binding*/ ctx[17](div1);
 
 			dispose = [
 				listen(button0, "click", stop_propagation(/*getwfs*/ ctx[2])),
@@ -1952,11 +2066,15 @@ function create_fragment$5(ctx) {
 		o: noop,
 		d(detaching) {
 			if (detaching) detach(div2);
-			/*div0_binding*/ ctx[15](null);
-			/*div1_binding*/ ctx[16](null);
+			/*div0_binding*/ ctx[16](null);
+			/*div1_binding*/ ctx[17](null);
 			run_all(dispose);
 		}
 	};
+}
+
+function getScale(z) {
+	return Math.pow(2, -z) * 156543.033928041;
 }
 
 function instance$5($$self, $$props, $$invalidate) {
@@ -1989,12 +2107,14 @@ function instance$5($$self, $$props, $$invalidate) {
 					layers.forEach(layer => layer.remove());
 				}
 			});
+
+			delete links[url];
 		}
 	}
 
 	function drawFeature(feature) {
 		try {
-			const { geometry, properties } = parseFeature(feature);
+			const { geometry, properties } = feature;
 
 			const layer = L.geoJSON(geometry, {
 				style: x => {
@@ -2015,13 +2135,21 @@ function instance$5($$self, $$props, $$invalidate) {
 
 	function drawFeatures(data) {
 		if (data.name === "wfs:FeatureCollection") {
-			return data.children.filter(({ name }) => name === "gml:featureMember").map(drawFeature).filter(e => e);
+			const featureCollection = parseFeatures(data);
+
+			if (featureCollection) {
+				const { features, bbox } = featureCollection;
+				const layers = features.map(drawFeature).filter(e => e);
+				const [x1, y1, x2, y2] = bbox;
+				map.fitBounds([[y1, x1], [y2, x2]]);
+				return layers;
+			}
 		} else {
 			return [];
 		}
 	}
 
-	async function getFeature(name, service, visible, url) {
+	async function getFeature(name, visible, url) {
 		if (map) {
 			const link = links[url];
 
@@ -2033,13 +2161,71 @@ function instance$5($$self, $$props, $$invalidate) {
 						layers.forEach(layer => layer.addTo(map));
 					}
 				} else {
-					const data = await send(`${url}?request=GetFeature&service=${service}&version=1.0.0&typeName=ms:${name}`);
-					const layers = drawFeatures(data);
+					const data = await getxml(`${url}?request=GetFeature&service=WFS&version=1.0.0&typeName=ms:${name}`);
+					const featureCollection = parse(data);
+					const layers = drawFeatures(featureCollection);
 					links[url] = links[url] || {};
 					links[url][name] = { data, layers };
 				}
 			} else if (link && link[name]) {
 				const { data, layers } = link[name];
+
+				if (Array.isArray(layers) && layers.length) {
+					layers.forEach(layer => layer.remove());
+				}
+			}
+		}
+	}
+
+	async function getMap({ name, bbox, visible, url }) {
+		if (map) {
+			const link = links[url];
+
+			if (visible) {
+				if (link && link[name]) {
+					const { layers } = link[name];
+
+					if (Array.isArray(layers) && layers.length) {
+						layers.forEach(layer => layer.addTo(map));
+					}
+				} else {
+					const bounds = map.getBounds();
+					let miny = Math.max(bounds.getSouth(), -90);
+					let maxy = Math.min(bounds.getNorth(), 90);
+					let minx = Math.max(bounds.getWest(), -180);
+					let maxx = Math.min(bounds.getEast(), 180);
+
+					if (bbox) {
+						minx = Math.min(bbox.minx, minx);
+						miny = Math.min(bbox.miny, miny);
+						maxx = Math.max(bbox.maxx, maxx);
+						maxy = Math.max(bbox.maxy, maxy);
+						if (minx >= maxx || miny >= maxy) return;
+					}
+
+					const mercMin = L.Projection.Mercator.project({ lat: miny, lng: minx });
+					const mercMax = L.Projection.Mercator.project({ lat: maxy, lng: maxx });
+					const scale = getScale(map.getZoom());
+					const width = Math.round((mercMax.x - mercMin.x) / scale);
+					const height = Math.round((mercMax.y - mercMin.y) / scale);
+
+					const layer = L.tileLayer.wms(`${serviceProxy}?${encodeURIComponent(url)}`, {
+						layers: name,
+						styles: "",
+						width,
+						height,
+						format: "image/png",
+						transparent: true,
+						attribution: ""
+					});
+
+					layer.addTo(map);
+					map.fitBounds([[bbox.maxy, bbox.minx], [bbox.miny, bbox.maxx]]);
+					links[url] = links[url] || {};
+					links[url][name] = { layers: [layer] };
+				}
+			} else if (link && link[name]) {
+				const { layers } = link[name];
 
 				if (Array.isArray(layers) && layers.length) {
 					layers.forEach(layer => layer.remove());
@@ -2063,8 +2249,9 @@ function instance$5($$self, $$props, $$invalidate) {
 			url.searchParams.append("version", "1.3.0");
 		}
 
-		const data = await send(url.toString());
-		const { title, features } = toFeatures(data);
+		const data = await getxml(url.toString());
+		const featureCollection = parse(data);
+		const { title, features } = toFeatures(featureCollection);
 
 		const lnk = new WFS({
 				target: linksContainer,
@@ -2077,11 +2264,11 @@ function instance$5($$self, $$props, $$invalidate) {
 		});
 
 		lnk.$on("change:visible", async ({ detail }) => {
-			const { name, service, visible } = detail;
+			const { name, visible } = detail;
 
 			try {
 				dispatch("request:start");
-				await getFeature(name, service, visible, value);
+				await getFeature(name, visible, value);
 				dispatch("request:end");
 			} catch(e) {
 				dispatch("request:error");
@@ -2104,8 +2291,9 @@ function instance$5($$self, $$props, $$invalidate) {
 			url.searchParams.append("version", "1.3.0");
 		}
 
-		const data = await send(url.toString());
-		const { title, layers } = toLayers(data);
+		const data = await getxml(url.toString());
+		const layerCollection = parse(data);
+		const { title, layers } = toLayers(layerCollection);
 
 		const lnk = new WMS({
 				target: linksContainer,
@@ -2118,19 +2306,30 @@ function instance$5($$self, $$props, $$invalidate) {
 		});
 
 		lnk.$on("change:visible", async ({ detail }) => {
-			
-		}); // const {name, service, visible} = detail;
-		// try {
-		//     dispatch('request:start');
-		//     await getFeature(name, service, visible, value);
-	} //     dispatch('request:end');
-	// }
+			const { name, visible, exGeographicBoundingBox, crs } = detail;
 
-	// catch(e) {
-	//     dispatch('request:error');
-	// }
+			if (exGeographicBoundingBox) {
+				const { eastBoundLongitude, northBoundLatitude, southBoundLatitude, westBoundLongitude } = exGeographicBoundingBox;
+
+				const bbox = {
+					miny: southBoundLatitude,
+					maxy: northBoundLatitude,
+					minx: westBoundLongitude,
+					maxx: eastBoundLongitude
+				};
+
+				try {
+					dispatch("request:start");
+					await getMap({ name, visible, bbox, url: value, crs });
+					dispatch("request:end");
+				} catch(e) {
+					dispatch("request:error");
+				}
+			}
+		});
+	}
+
 	let header;
-
 	let dlg;
 
 	function getwfs() {
@@ -2223,6 +2422,7 @@ function instance$5($$self, $$props, $$invalidate) {
 		drawFeature,
 		drawFeatures,
 		getFeature,
+		getMap,
 		addwfs,
 		addwms,
 		div0_binding,

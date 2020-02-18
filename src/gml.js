@@ -1,93 +1,116 @@
 function parseLinearRing (linearRing) {
     const {children} = linearRing;
-    return children.reduce((a, e) => {
-        switch(e.name) {
-            case 'gml:coordinates':
-                a = a.concat (parseCoordinates(e));                
-                break;
-            default:
-                break;
-        }
-        return a;
-    }, []);
+    if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+            switch(e.name) {
+                case 'gml:coordinates':
+                    a = a.concat (parseCoordinates(e));                
+                    break;
+                default:
+                    break;
+            }
+            return a;
+        }, []);
+    }
+    else {
+        return null;
+    }    
 }
 
 function parseBoundary (outerBoundary) {
     const {children} = outerBoundary;
-    return children.reduce((a, e) => {
-        switch(e.name) {
-            case 'gml:LinearRing':
-                a = a.concat (parseLinearRing(e));
-                break;
-            default:
-                break;
-        }
-        return a;
-    }, []);
+    if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+            switch(e.name) {
+                case 'gml:LinearRing':
+                    a = a.concat (parseLinearRing(e));
+                    break;
+                default:
+                    break;
+            }
+            return a;
+        }, []);
+    }
+    else {
+        return null;
+    }
 }
 
 function parsePolygon (polygon) {
     const {children} = polygon;
-    const coordinates = children.reduce((a, e) => {
-        switch(e.name) {
-            case 'gml:outerBoundaryIs':
-                a.push (parseBoundary(e));
-                break;
-            case 'gml:innerBoundaryIs':
-                a.push (parseBoundary(e));
-                break;
-            default:
-                break;
-        }
-        return a;
-    }, []);
-    return {type: 'Polygon', coordinates};
+    if (Array.isArray(children)) {
+        const coordinates = children.reduce((a, e) => {
+            switch(e.name) {
+                case 'gml:outerBoundaryIs':
+                    a.push (parseBoundary(e));
+                    break;
+                case 'gml:innerBoundaryIs':
+                    a.push (parseBoundary(e));
+                    break;
+                default:
+                    break;
+            }
+            return a;
+        }, []);
+        return {type: 'Polygon', coordinates};
+    }
+    else {
+        return null;
+    }    
 }
 
 function parsePolygonMember (polygon) {
     const {children} = polygon;
-    return children.reduce((a, e) => {
+    if (Array.isArray(children) && children.length === 1) {
+        const [e] = children;
         switch(e.name) {
-            case 'gml:Polygon':
-                a.push (parsePolygon(e).coordinates);
-                break;            
+            case 'gml:Polygon':                
+                return parsePolygon(e).coordinates;                            
             default:
-                break;
+                return null;
         }
-        return a;
-    }, []);    
+    }
+    else {
+        return null;
+    }
 }
 
 function parseMultiPolygon (multiPolygon) {
     const {children} = multiPolygon;
-    const coordinates = children.reduce((a, e) => {
-        switch(e.name) {
-            case 'gml:polygonMember':
-                a.push (parsePolygonMember(e));
-                break;
-            default:
-                break;
-        }
-        return a;
-    }, []);
-    return {type: 'MultiPolygon', coordinates};
+    if(Array.isArray(children)) {
+        const coordinates = children.reduce((a, e) => {
+            switch(e.name) {
+                case 'gml:polygonMember':
+                    a.push (parsePolygonMember(e));
+                    break;
+                default:
+                    break;
+            }
+            return a;
+        }, []);
+        return {type: 'MultiPolygon', coordinates};
+    }
+    else {
+        return null;
+    }    
 }
 
 function parseGeometry (geometry) {
     const {children} = geometry;
-    return children.reduce((a, e) => {
+    if (Array.isArray(children) && children.length === 1) {
+        const [e] = children;
         switch(e.name) {
             case 'gml:Polygon':
-                a = parsePolygon(e);
-                break;
+                return parsePolygon(e);                
             case 'gml:MultiPolygon':
-                a = parseMultiPolygon(e);
-                break;
+                return parseMultiPolygon(e);                
             default:
-                break;
+                return null;
         }
-        return a;
-    }, {});
+    }
+    else {
+        return null;
+    } 
 }
 
 const parseCoordinates = coordinates =>
@@ -98,48 +121,93 @@ const parseCoordinates = coordinates =>
 
 function parseBox (box) {
     const {children} = box;
-    return children.reduce((a, e) => {
+    if (Array.isArray(children)) {
+        const [e] = children;
         switch(e.name) {
             case 'gml:coordinates':
                 return parseCoordinates(e).reduce((b, p) => b.concat(p), []);                
             default:
-                return a;
-        }        
-    }, []);
+                return null;
+        }
+    }
+    else {
+        return null;
+    }
 }
 
 function parseBoundedBy(boundedBy) {
     const {children} = boundedBy;
-    return children.reduce((a, e) => {
+    if (Array.isArray(children) && children.length === 1) {
+        const [e] = children;
         switch(e.name) {
             case 'gml:Box':
                 return parseBox(e);                
             default:
-                return a;
-        }        
-    }, []);
-}
-
-function parseFeature(feature) {
-    const {name, children} = feature.children[0];
-    return children.reduce((a, e) => {        
-        switch(e.name) {
-            case 'gml:boundedBy':
-                a.bbox = parseBoundedBy(e);
-                break;
-            case 'ms:msGeometry':
-                a.geometry = parseGeometry(e);
-                break;
-            case 'ms:id':
-            case 'ms:layer':
-            case 'ms:border_color':
-                a.properties[e.name] = e.value;
-                break;
-            default:
-                break;
+                return null;
         }
-        return a;
-    },  {type: 'Feature', properties: {name}});
+    }
+    else {
+        return null;
+    }    
 }
 
-export default parseFeature;
+function parseFeature(feature) {        
+    const {name, children} = feature;
+    if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+            switch(e.name) {
+                case 'gml:boundedBy':
+                    a.bbox = parseBoundedBy(e);
+                    break;
+                case 'ms:msGeometry':
+                    a.geometry = parseGeometry(e);
+                    break;
+                case 'ms:id':
+                case 'ms:layer':
+                case 'ms:border_color':
+                    a.properties[e.name] = e.value;
+                    break;
+                default:
+                    break;
+            }
+            return a;
+        },  {type: 'Feature', properties: {name}});
+    }
+    else {
+        return null;
+    }    
+}
+
+function parseFeatureMember (featureMember) {
+    const {children} = featureMember;
+    if (Array.isArray(children) && children.length === 1) {
+        const [e] = children;
+        return parseFeature(e);
+    }
+    else {
+        return null;
+    }
+}
+
+function parseFeatures (featureCollection) {
+    const {children} = featureCollection;
+    if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+            if (e.name === 'gml:featureMember') {
+                const f = parseFeatureMember(e);
+                if (f) {                    
+                    a.features.push(f);
+                }                
+            }
+            else if (e.name === 'gml:boundedBy') {
+                a.bbox = parseBoundedBy(e);
+            }
+            return a;
+        }, {type: 'FeatureCollection', features: []});
+    }
+    else {
+        return null;
+    }
+}
+
+export default parseFeatures;

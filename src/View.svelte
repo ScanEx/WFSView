@@ -6,9 +6,11 @@
     import Dialog from './Dialog.svelte';
     import T from 'scanex-translations';
     import {createEventDispatcher, onMount} from 'svelte';
-    import send from './request.js';
+    import {getxml, getmap} from './request.js';
+    import xml2json from './xml2json.js';
     import L from 'leaflet';
-    import parseFeature from './gml.js';
+    import parseFeatures from './gml.js';
+    import {serviceProxy} from './config.json';
     import './icons.css';
 
     const translate = T.getText.bind(T);
@@ -42,12 +44,13 @@
                     layers.forEach(layer => layer.remove());
                 }
             });
+            delete links[url];
         }
     }
 
     function drawFeature (feature) {
         try {
-            const {geometry, properties} = parseFeature(feature);
+            const {geometry, properties} = feature;
             const layer = L.geoJSON(geometry, {
                 style: x => {                    
                     return {color: properties['ms:border_color'], weight: 1};
@@ -64,14 +67,21 @@
 
     function drawFeatures(data) {
         if (data.name === 'wfs:FeatureCollection') {
-            return data.children.filter(({name}) => name === 'gml:featureMember').map(drawFeature).filter(e => e);
+            const featureCollection = parseFeatures(data);
+            if (featureCollection) {
+                const {features, bbox} = featureCollection;
+                const layers = features.map(drawFeature).filter(e => e);
+                const [x1, y1, x2, y2] = bbox;                
+                map.fitBounds([[y1,x1],[y2,x2]]);
+                return layers;
+            }
         }
         else {
             return [];
         }
     }
 
-    async function getFeature (name, service, visible, url) {
+    async function getFeature (name, visible, url) {
         if (map) {            
             const link = links[url];
             if (visible) {                
@@ -82,14 +92,74 @@
                     }                    
                 }
                 else {                    
-                    const data = await send(`${url}?request=GetFeature&service=${service}&version=1.0.0&typeName=ms:${name}`);
-                    const layers = drawFeatures(data);
+                    const data = await getxml(`${url}?request=GetFeature&service=WFS&version=1.0.0&typeName=ms:${name}`);
+                    const featureCollection = xml2json(data);
+                    const layers = drawFeatures(featureCollection);
                     links[url] = links[url] || {};
                     links[url][name] = { data, layers };
                 }                
             }
             else if (link && link[name]) {                
                 const {data, layers} = link[name];
+                if (Array.isArray (layers) && layers.length) {
+                    layers.forEach(layer => layer.remove());
+                }
+            }
+        }
+    }
+
+    function getScale (z) {
+        return Math.pow(2, -z)*156543.033928041;
+    }
+
+    async function getMap ({name, bbox, visible, url}) {
+        if (map) {            
+            const link = links[url];
+            if (visible) {                
+                if (link && link[name]) {                    
+                    const {layers} = link[name];
+                    if (Array.isArray (layers) && layers.length) {
+                        layers.forEach(layer => layer.addTo(map));
+                    }                    
+                }
+                else {
+                    const bounds = map.getBounds();  
+                    let miny = Math.max(bounds.getSouth(), -90);
+                    let maxy = Math.min(bounds.getNorth(), 90);
+                    let minx = Math.max(bounds.getWest(), -180);
+                    let maxx = Math.min(bounds.getEast(), 180);
+                    if (bbox)
+                    {
+                        minx = Math.min(bbox.minx, minx);
+                        miny = Math.min(bbox.miny, miny);
+                        maxx = Math.max(bbox.maxx, maxx);
+                        maxy = Math.max(bbox.maxy, maxy);
+
+                        if (minx >= maxx || miny >= maxy) return;
+                    }
+
+                    const mercMin = L.Projection.Mercator.project({lat: miny, lng: minx});
+                    const mercMax = L.Projection.Mercator.project({lat: maxy, lng: maxx});
+                    const scale = getScale(map.getZoom());
+                    const width = Math.round((mercMax.x - mercMin.x)/scale);
+                    const height = Math.round((mercMax.y - mercMin.y)/scale);                    
+                    const layer = L.tileLayer.wms(`${serviceProxy}?${encodeURIComponent(url)}`, {
+                        layers: name,
+                        styles: '',
+                        width,
+                        height,
+                        format: 'image/png',
+                        transparent: true,
+                        attribution: ""
+                    });
+                    layer.addTo(map);
+                    map.fitBounds([[bbox.maxy, bbox.minx],[bbox.miny, bbox.maxx]]);
+                    links[url] = links[url] || {};
+                    links[url][name] = { layers: [layer] };
+                }
+            }
+            else if (link && link[name]) {                
+                const {layers} = link[name];
                 if (Array.isArray (layers) && layers.length) {
                     layers.forEach(layer => layer.remove());
                 }
@@ -108,8 +178,9 @@
         if (!url.searchParams.has('version')) {
             url.searchParams.append('version', '1.3.0');
         }
-        const data = await send (url.toString());
-        const {title, features} = toFeatures(data);
+        const data = await getxml (url.toString());
+        const featureCollection = xml2json(data);
+        const {title, features} = toFeatures(featureCollection);
         const lnk = new WFS({
             target: linksContainer,
             props: { features, title }
@@ -119,10 +190,10 @@
             closeLink(value);
         });
         lnk.$on('change:visible', async ({detail}) => {            
-            const {name, service, visible} = detail;
+            const {name, visible} = detail;
             try {
                 dispatch('request:start');
-                await getFeature(name, service, visible, value);
+                await getFeature(name, visible, value);
                 dispatch('request:end');
             }
             catch(e) {
@@ -142,8 +213,9 @@
         if (!url.searchParams.has('version')) {
             url.searchParams.append('version', '1.3.0');
         }
-        const data = await send (url.toString());
-        const {title, layers} = toLayers(data);
+        const data = await getxml (url.toString());
+        const layerCollection = xml2json(data);
+        const {title, layers} = toLayers(layerCollection);
         const lnk = new WMS({
             target: linksContainer,
             props: { layers, title }
@@ -153,15 +225,24 @@
             closeLink(value);
         });
         lnk.$on('change:visible', async ({detail}) => {   
-            // const {name, service, visible} = detail;
-            // try {
-            //     dispatch('request:start');
-            //     await getFeature(name, service, visible, value);
-            //     dispatch('request:end');
-            // }
-            // catch(e) {
-            //     dispatch('request:error');
-            // }
+            const {name, visible, exGeographicBoundingBox, crs} = detail;
+            if (exGeographicBoundingBox) {
+                const { eastBoundLongitude, northBoundLatitude, southBoundLatitude, westBoundLongitude } = exGeographicBoundingBox;
+                const bbox = {
+                    miny: southBoundLatitude,
+                    maxy: northBoundLatitude,
+                    minx: westBoundLongitude,
+                    maxx: eastBoundLongitude,
+                };                
+                try {
+                    dispatch('request:start');
+                    await getMap({name, visible, bbox, url: value, crs});
+                    dispatch('request:end');
+                }
+                catch(e) {
+                    dispatch('request:error');
+                }
+            }            
         });
     }
 
