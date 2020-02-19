@@ -7,10 +7,6 @@
     export let features = [];
 
     const dispatch = createEventDispatcher();
-    
-    function onChangeVisible({detail}) {
-        dispatch('change:visible', {...detail, service: 'WFS'});
-    }
 
 </script>
 
@@ -30,7 +26,7 @@
     </div>    
     <div class="content">
         {#each features as f}
-        <Feature {...f} on:change:visible="{onChangeVisible}" />
+        <Feature {...f} on:change:visible />
         {/each}
     </div>
 </div>

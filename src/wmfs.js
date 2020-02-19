@@ -1,11 +1,15 @@
 const uncap = str => `${str.substr(0, 1).toLowerCase()}${str.substr(1)}`;
 
 const parseNode = node => {
-    let r = {};
-    for (const n of node.children) {        
-        r[uncap(n.localName)] = n.value;
+    const {children} = node;
+    if (Array.isArray(children)) {
+        return children.reduce((a,e) => {
+            return {...a, [uncap (e.name)]: e.value};
+        }, {});
     }
-    return r;
+    else {
+        return null;
+    }    
 };
 
 const parseExGeographicBoundingBox = node => {
@@ -18,18 +22,21 @@ const parseExGeographicBoundingBox = node => {
     };
 };
 
+const parseStyle = node => {
+    const {children} = node;
+    if (Array.isArray(children)) {
+        return children.reduce((a,e) => {}, {});
+    }
+    else {
+        return null;
+    }
+};
+
 const toLayer = node => {
     let r = {};
     for (const n of node.children) {
-        const {localName} = n;
-        if (localName === 'Title') {
-            r.title = n.value;
-        }
-        switch(localName) {
-            case 'Title':                
-            case 'Name':
-                r[uncap(localName)] = n.value;
-                break;
+        const {localName, name} = n;        
+        switch(localName) {            
             case 'Layer':
                 if (r.children) {
                     r.children.push(toLayer(n));
@@ -37,7 +44,9 @@ const toLayer = node => {
                 else {
                     r.children = [toLayer(n)];
                 }
-                break;            
+                break;
+            case 'Style':
+                break;
             case 'CRS':
                 if (r.crs) {
                     r.crs.push(n.value);
@@ -50,14 +59,15 @@ const toLayer = node => {
                 r.exGeographicBoundingBox = parseExGeographicBoundingBox(n);
                 break;
             case 'BoundingBox':
-                if (r.boundingBoxes) {
-                    r.boundingBoxes.push(n.attributes);
+                if (r[uncap(name)]) {
+                    r[uncap(name)].push(n.attributes);
                 }
                 else {
-                    r.boundingBoxes = [n.attributes];
-                }                    
+                    r[uncap(name)] = [n.attributes];
+                }               
                 break;
             default:
+                r[uncap(name)] = n.value;
                 break;
         }
     }
@@ -86,20 +96,23 @@ const toLayers = ({children}) => {
 const toFeature = node => {
     let r = {};
     for (const n of node.children) {
-        const {localName} = n;        
+        const {localName, name} = n;
         switch(localName) {
             case 'Title':
+                r.title = n.value;
+                r[uncap(name)] = n.value;
+                break;
             case 'Name':            
             case 'Abstract':
             case 'DefaultSRS':
-                r[uncap(localName)] = n.value;
+                r[uncap(name)] = n.value;
                 break;
             case 'OtherSRS':
-                if (r.otherSRS) {
-                    r.otherSRS.push(n.value);
+                if (r[uncap(name)]) {
+                    r[uncap(name)].push(n.value);
                 }
                 else {
-                    r.otherSRS = [n.value];
+                    r[uncap(name)] = [n.value];
                 }
                 break;            
             case 'WGS84BoundingBox':                
@@ -110,6 +123,26 @@ const toFeature = node => {
         }
     }
     return r;
+};
+
+const parseServiceIdentification = node => {
+    const {children} = node;
+    if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+            switch(e.name) {
+                case 'ows:Title':
+                    a.title = e.value;
+                    break;
+                default:
+                    a[uncap(e.name)] = e.value;
+                    break;
+            }
+            return a;
+        }, {});
+    }
+    else {
+        return null;
+    }
 };
 
 const toFeatures = ({children}) => {
@@ -123,7 +156,7 @@ const toFeatures = ({children}) => {
                 .forEach(x => a.features = a.features ? a.features.concat(x) : [x]);
                 break;
             case 'ServiceIdentification':
-                a = {...a, ...parseNode(n)};
+                a = {...a, ...parseServiceIdentification(n)};
                 break;
             default:
                 break;

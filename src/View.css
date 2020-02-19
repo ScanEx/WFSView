@@ -29,3 +29,6 @@
 .scanex-svc-view .scanex-svc-view-visible {
     margin-right: 5px;
 }
+.scanex-svc-view-attr td {
+    vertical-align: top;
+}

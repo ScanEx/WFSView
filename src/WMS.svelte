@@ -6,7 +6,7 @@
     export let title = '';
     export let layers = [];
 
-    const dispatch = createEventDispatcher();   
+    const dispatch = createEventDispatcher();
     
 </script>
 

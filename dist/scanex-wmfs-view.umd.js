@@ -376,13 +376,19 @@
     const uncap = str => `${str.substr(0, 1).toLowerCase()}${str.substr(1)}`;
 
     const parseNode = node => {
-      let r = {};
+      const {
+        children
+      } = node;
 
-      for (const n of node.children) {
-        r[uncap(n.localName)] = n.value;
+      if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+          return { ...a,
+            [uncap(e.name)]: e.value
+          };
+        }, {});
+      } else {
+        return null;
       }
-
-      return r;
     };
 
     const parseExGeographicBoundingBox = node => {
@@ -405,19 +411,11 @@
 
       for (const n of node.children) {
         const {
-          localName
+          localName,
+          name
         } = n;
 
-        if (localName === 'Title') {
-          r.title = n.value;
-        }
-
         switch (localName) {
-          case 'Title':
-          case 'Name':
-            r[uncap(localName)] = n.value;
-            break;
-
           case 'Layer':
             if (r.children) {
               r.children.push(toLayer(n));
@@ -425,6 +423,9 @@
               r.children = [toLayer(n)];
             }
 
+            break;
+
+          case 'Style':
             break;
 
           case 'CRS':
@@ -441,12 +442,16 @@
             break;
 
           case 'BoundingBox':
-            if (r.boundingBoxes) {
-              r.boundingBoxes.push(n.attributes);
+            if (r[uncap(name)]) {
+              r[uncap(name)].push(n.attributes);
             } else {
-              r.boundingBoxes = [n.attributes];
+              r[uncap(name)] = [n.attributes];
             }
 
+            break;
+
+          default:
+            r[uncap(name)] = n.value;
             break;
         }
       }
@@ -479,22 +484,27 @@
 
       for (const n of node.children) {
         const {
-          localName
+          localName,
+          name
         } = n;
 
         switch (localName) {
           case 'Title':
+            r.title = n.value;
+            r[uncap(name)] = n.value;
+            break;
+
           case 'Name':
           case 'Abstract':
           case 'DefaultSRS':
-            r[uncap(localName)] = n.value;
+            r[uncap(name)] = n.value;
             break;
 
           case 'OtherSRS':
-            if (r.otherSRS) {
-              r.otherSRS.push(n.value);
+            if (r[uncap(name)]) {
+              r[uncap(name)].push(n.value);
             } else {
-              r.otherSRS = [n.value];
+              r[uncap(name)] = [n.value];
             }
 
             break;
@@ -506,6 +516,30 @@
       }
 
       return r;
+    };
+
+    const parseServiceIdentification = node => {
+      const {
+        children
+      } = node;
+
+      if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+          switch (e.name) {
+            case 'ows:Title':
+              a.title = e.value;
+              break;
+
+            default:
+              a[uncap(e.name)] = e.value;
+              break;
+          }
+
+          return a;
+        }, {});
+      } else {
+        return null;
+      }
     };
 
     const toFeatures = ({
@@ -523,7 +557,7 @@
 
           case 'ServiceIdentification':
             a = { ...a,
-              ...parseNode(n)
+              ...parseServiceIdentification(n)
             };
             break;
         }
@@ -622,7 +656,7 @@
     	return child_ctx;
     }
 
-    // (32:8) {#each features as f}
+    // (28:8) {#each features as f}
     function create_each_block(ctx) {
     	let current;
     	const feature_spread_levels = [/*f*/ ctx[5]];
@@ -633,7 +667,7 @@
     	}
 
     	const feature = new Feature({ props: feature_props });
-    	feature.$on("change:visible", /*onChangeVisible*/ ctx[3]);
+    	feature.$on("change:visible", /*change_visible_handler*/ ctx[4]);
 
     	return {
     		c() {
@@ -741,12 +775,12 @@
     			}
 
     			current = true;
-    			dispose = listen(i, "click", /*click_handler*/ ctx[4]);
+    			dispose = listen(i, "click", /*click_handler*/ ctx[3]);
     		},
     		p(ctx, [dirty]) {
     			if (!current || dirty & /*title*/ 1) set_data(t2, /*title*/ ctx[0]);
 
-    			if (dirty & /*features, onChangeVisible*/ 10) {
+    			if (dirty & /*features*/ 2) {
     				each_value = /*features*/ ctx[1];
     				let i;
 
@@ -803,19 +837,18 @@
     	let { title = "" } = $$props;
     	let { features = [] } = $$props;
     	const dispatch = createEventDispatcher();
-
-    	function onChangeVisible({ detail }) {
-    		dispatch("change:visible", { ...detail, service: "WFS" });
-    	}
-
     	const click_handler = () => dispatch("close");
+
+    	function change_visible_handler(event) {
+    		bubble($$self, event);
+    	}
 
     	$$self.$set = $$props => {
     		if ("title" in $$props) $$invalidate(0, title = $$props.title);
     		if ("features" in $$props) $$invalidate(1, features = $$props.features);
     	};
 
-    	return [title, features, dispatch, onChangeVisible, click_handler];
+    	return [title, features, dispatch, click_handler, change_visible_handler];
     }
 
     class WFS extends SvelteComponent {
@@ -1964,6 +1997,13 @@
             case 'ms:id':
             case 'ms:layer':
             case 'ms:border_color':
+            case 'ms:body_fore_color':
+            case 'ms:body_back_color':
+            case 'ms:symbol':
+            case 'ms:angle':
+            case 'ms:size':
+            case 'ms:width':
+            case 'ms:border_width':
               a.properties[e.name] = e.value;
               break;
           }
@@ -1993,6 +2033,58 @@
       }
     }
 
+    function parseGmx(gmx) {
+      const {
+        children
+      } = gmx;
+
+      if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+          switch (e.name) {
+            case 'gmx:NAME':
+              a.properties.name = e.value;
+              break;
+
+            case 'gmx:wkb_geometry':
+              a.geometry = parseGeometry(e);
+              break;
+
+            default:
+              a.properties[e.name] = e.value;
+              break;
+          }
+
+          return a;
+        }, {
+          properties: {}
+        });
+      } else {
+        return null;
+      }
+    }
+
+    function parseWfsMember(wfsMember) {
+      const {
+        children,
+        localName
+      } = wfsMember;
+
+      if (Array.isArray(children)) {
+        return children.reduce((a, e) => {
+          return { ...a,
+            ...parseGmx(e)
+          };
+        }, {
+          type: 'Feature',
+          properties: {
+            name: localName
+          }
+        });
+      } else {
+        return null;
+      }
+    }
+
     function parseFeatures(featureCollection) {
       const {
         children
@@ -2008,6 +2100,8 @@
             }
           } else if (e.name === 'gml:boundedBy') {
             a.bbox = parseBoundedBy(e);
+          } else if (e.name === 'wfs:member') {
+            a.features.push(parseWfsMember(e));
           }
 
           return a;
@@ -2053,10 +2147,10 @@
     			append(div0, button0);
     			append(div0, t1);
     			append(div0, button1);
-    			/*div0_binding*/ ctx[16](div0);
+    			/*div0_binding*/ ctx[17](div0);
     			append(div2, t3);
     			append(div2, div1);
-    			/*div1_binding*/ ctx[17](div1);
+    			/*div1_binding*/ ctx[18](div1);
 
     			dispose = [
     				listen(button0, "click", stop_propagation(/*getwfs*/ ctx[2])),
@@ -2068,8 +2162,8 @@
     		o: noop,
     		d(detaching) {
     			if (detaching) detach(div2);
-    			/*div0_binding*/ ctx[16](null);
-    			/*div1_binding*/ ctx[17](null);
+    			/*div0_binding*/ ctx[17](null);
+    			/*div1_binding*/ ctx[18](null);
     			run_all(dispose);
     		}
     	};
@@ -2099,35 +2193,39 @@
     	let { map } = $$props;
 
     	function closeLink(url) {
-    		const link = links[url];
+    		const u = `${url.origin}${url.pathname}`;
+    		const link = links[u];
 
     		if (link) {
     			Object.keys(link).forEach(k => {
-    				const { layers } = link[k];
+    				const { layer } = link[k];
 
-    				if (Array.isArray(layers) && layers.length) {
-    					layers.forEach(layer => layer.remove());
+    				if (layer) {
+    					layer.remove();
     				}
     			});
 
-    			delete links[url];
+    			delete links[u];
     		}
     	}
 
-    	function drawFeature(feature) {
+    	const renderer = L.canvas();
+
+    	function createFeature(feature) {
     		try {
     			const { geometry, properties } = feature;
 
-    			const layer = L.geoJSON(geometry, {
+    			const layer = L.geoJSON(feature, {
     				style: x => {
     					return {
     						color: properties["ms:border_color"],
-    						weight: 1
+    						fillColor: properties["body_back_color"],
+    						weight: properties["ms:border_width"]
     					};
-    				}
+    				},
+    				renderer
     			});
 
-    			layer.addTo(map);
     			return layer;
     		} catch(e) {
     			console.log(e);
@@ -2141,10 +2239,26 @@
 
     			if (featureCollection) {
     				const { features, bbox } = featureCollection;
-    				const layers = features.map(drawFeature).filter(e => e);
-    				const [x1, y1, x2, y2] = bbox;
-    				map.fitBounds([[y1, x1], [y2, x2]]);
-    				return layers;
+    				const layers = features.map(createFeature).filter(e => e);
+
+    				const fg = L.featureGroup(layers).bindPopup(({ feature: { properties } }) => {
+    					return `<table class="scanex-svc-view-attr">
+                            <tr>
+                                <td>name:</td>
+                                <td>${properties["name"]}</td>
+                            </tr>
+                            <tr>
+                                <td>ms:id:</td>
+                                <td>${properties["ms:id"]}</td>
+                            </tr>
+                            <tr>
+                                <td>ms:layer:</td>
+                                <td>${properties["ms:layer"]}</td>
+                            </tr>
+                        </table`;
+    				}).addTo(map);
+
+    				return fg;
     			}
     		} else {
     			return [];
@@ -2153,27 +2267,58 @@
 
     	async function getFeature(name, visible, url) {
     		if (map) {
-    			const link = links[url];
+    			const u = `${url.origin}${url.pathname}`;
+    			const link = links[u];
 
     			if (visible) {
     				if (link && link[name]) {
-    					const { data, layers } = link[name];
+    					const { layer } = link[name];
 
-    					if (Array.isArray(layers) && layers.length) {
-    						layers.forEach(layer => layer.addTo(map));
+    					if (layer && !link[name].visible) {
+    						layer.addTo(map);
+    						const bounds = layer.getBounds();
+    						map.fitBounds(bounds);
+    						links[u][name].visible = true;
     					}
     				} else {
-    					const data = await getxml(`${url}?request=GetFeature&service=WFS&version=1.0.0&typeName=ms:${name}`);
+    					if (url.searchParams.has("request")) {
+    						url.searchParams.set("request", "GetFeature");
+    					} else {
+    						url.searchParams.append("request", "GetFeature");
+    					}
+
+    					if (url.searchParams.has("service")) {
+    						url.searchParams.set("service", "WFS");
+    					} else {
+    						url.searchParams.append("service", "WFS");
+    					}
+
+    					if (url.searchParams.has("typeName")) {
+    						url.searchParams.set("typeName", name);
+    					} else {
+    						url.searchParams.append("typeName", name);
+    					}
+
+    					if (url.searchParams.has("version")) {
+    						url.searchParams.set("version", "1.0.0");
+    					} else {
+    						url.searchParams.append("version", "1.0.0");
+    					}
+
+    					const data = await getxml(url.toString());
     					const featureCollection = parse(data);
-    					const layers = drawFeatures(featureCollection);
-    					links[url] = links[url] || {};
-    					links[url][name] = { data, layers };
+    					const layer = drawFeatures(featureCollection);
+    					const bounds = layer.getBounds();
+    					map.fitBounds(bounds);
+    					links[u] = links[u] || {};
+    					links[u][name] = { data, layer, visible: true };
     				}
     			} else if (link && link[name]) {
-    				const { data, layers } = link[name];
+    				const { layer } = link[name];
 
-    				if (Array.isArray(layers) && layers.length) {
-    					layers.forEach(layer => layer.remove());
+    				if (layer) {
+    					layer.remove();
+    					links[u][name].visible = false;
     				}
     			}
     		}
@@ -2181,22 +2326,24 @@
 
     	async function getMap({ name, bbox, visible, url }) {
     		if (map) {
-    			const link = links[url];
+    			const u = `${url.origin}${url.pathname}`;
+    			const link = links[u];
 
     			if (visible) {
     				if (link && link[name]) {
-    					const { layers, visible } = link[name];
+    					const { layer } = link[name];
 
-    					if (Array.isArray(layers) && layers.length && !visible) {
-    						layers.forEach(layer => layer.addTo(map));
-    						links[url][name].visible = true;
+    					if (layer && !link[name].visible) {
+    						layer.addTo(map);
+    						links[u][name].visible = true;
+    						map.fitBounds([[bbox.maxy, bbox.minx], [bbox.miny, bbox.maxx]]);
     					}
     				} else {
-    					const bounds = map.getBounds();
-    					let miny = Math.max(bounds.getSouth(), -90);
-    					let maxy = Math.min(bounds.getNorth(), 90);
-    					let minx = Math.max(bounds.getWest(), -180);
-    					let maxx = Math.min(bounds.getEast(), 180);
+    					const bs = map.getBounds();
+    					let miny = Math.max(bs.getSouth(), -90);
+    					let maxy = Math.min(bs.getNorth(), 90);
+    					let minx = Math.max(bs.getWest(), -180);
+    					let maxx = Math.min(bs.getEast(), 180);
 
     					if (bbox) {
     						minx = Math.min(bbox.minx, minx);
@@ -2212,7 +2359,19 @@
     					const width = Math.round((mercMax.x - mercMin.x) / scale);
     					const height = Math.round((mercMax.y - mercMin.y) / scale);
 
-    					const layer = L.tileLayer.wms(`${serviceProxy}?${encodeURIComponent(url)}`, {
+    					if (url.searchParams.has("request")) {
+    						url.searchParams.delete("request");
+    					}
+
+    					if (url.searchParams.has("service")) {
+    						url.searchParams.delete("service");
+    					}
+
+    					if (url.searchParams.has("version")) {
+    						url.searchParams.delete("version");
+    					}
+
+    					const layer = L.tileLayer.wms(`${serviceProxy}?${encodeURIComponent(url.toString())}`, {
     						layers: name,
     						styles: "",
     						width,
@@ -2224,15 +2383,15 @@
 
     					layer.addTo(map);
     					map.fitBounds([[bbox.maxy, bbox.minx], [bbox.miny, bbox.maxx]]);
-    					links[url] = links[url] || {};
-    					links[url][name] = { layers: [layer], visible };
+    					links[u] = links[u] || {};
+    					links[u][name] = { layer, visible };
     				}
     			} else if (link && link[name]) {
-    				const { layers, visible } = link[name];
+    				const { layer, visible } = link[name];
 
-    				if (Array.isArray(layers) && layers.length && visible) {
-    					layers.forEach(layer => layer.remove());
-    					links[url][name].visible = false;
+    				if (layer && visible) {
+    					layer.remove();
+    					links[u][name].visible = false;
     				}
     			}
     		}
@@ -2241,11 +2400,15 @@
     	async function addwfs(value) {
     		const url = new URL(value);
 
-    		if (!url.searchParams.has("service")) {
+    		if (url.searchParams.has("service")) {
+    			url.searchParams.set("service", "WFS");
+    		} else {
     			url.searchParams.append("service", "WFS");
     		}
 
-    		if (!url.searchParams.has("request")) {
+    		if (url.searchParams.has("request")) {
+    			url.searchParams.set("request", "GetCapabilities");
+    		} else {
     			url.searchParams.append("request", "GetCapabilities");
     		}
 
@@ -2253,7 +2416,8 @@
     			url.searchParams.append("version", "1.3.0");
     		}
 
-    		const data = await getxml(url.toString());
+    		const u = url.toString();
+    		const data = await getxml(u);
     		const featureCollection = parse(data);
     		const { title, features } = toFeatures(featureCollection);
 
@@ -2264,7 +2428,7 @@
 
     		lnk.$on("close", () => {
     			lnk.$destroy();
-    			closeLink(value);
+    			closeLink(url);
     		});
 
     		lnk.$on("change:visible", async ({ detail }) => {
@@ -2272,7 +2436,7 @@
 
     			try {
     				dispatch("request:start");
-    				await getFeature(name, visible, value);
+    				await getFeature(name, visible, url);
     				dispatch("request:end");
     			} catch(e) {
     				dispatch("request:error");
@@ -2306,7 +2470,7 @@
 
     		lnk.$on("close", () => {
     			lnk.$destroy();
-    			closeLink(value);
+    			closeLink(url);
     		});
 
     		lnk.$on("change:visible", async ({ detail }) => {
@@ -2324,7 +2488,7 @@
 
     				try {
     					dispatch("request:start");
-    					await getMap({ name, visible, bbox, url: value, crs });
+    					await getMap({ name, visible, bbox, url, crs });
     					dispatch("request:end");
     				} catch(e) {
     					dispatch("request:error");
@@ -2423,7 +2587,8 @@
     		translate,
     		dispatch,
     		closeLink,
-    		drawFeature,
+    		renderer,
+    		createFeature,
     		drawFeatures,
     		getFeature,
     		getMap,

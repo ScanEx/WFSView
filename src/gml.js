@@ -165,6 +165,13 @@ function parseFeature(feature) {
                 case 'ms:id':
                 case 'ms:layer':
                 case 'ms:border_color':
+                case 'ms:body_fore_color':
+                case 'ms:body_back_color':
+                case 'ms:symbol':
+                case 'ms:angle':
+                case 'ms:size':
+                case 'ms:width':
+                case 'ms:border_width':
                     a.properties[e.name] = e.value;
                     break;
                 default:
@@ -189,6 +196,41 @@ function parseFeatureMember (featureMember) {
     }
 }
 
+function parseGmx (gmx) {
+    const {children} = gmx;
+    if (Array.isArray(children)) {
+        return children.reduce((a,e) => {
+            switch (e.name){
+                case 'gmx:NAME':
+                    a.properties.name = e.value;
+                    break;
+                case 'gmx:wkb_geometry':
+                    a.geometry = parseGeometry(e);
+                    break;                
+                default:
+                    a.properties[e.name] = e.value;
+                    break;
+            }
+            return a;
+        }, {properties: {}});
+    }
+    else {
+        return null;
+    }
+}
+
+function parseWfsMember (wfsMember) {
+    const {children, localName} = wfsMember;
+    if (Array.isArray(children)) {
+        return children.reduce((a,e) => {                     
+            return {...a, ...parseGmx(e)};
+        }, {type: 'Feature', properties: {name: localName}});
+    }
+    else {
+        return null;
+    }
+}
+
 function parseFeatures (featureCollection) {
     const {children} = featureCollection;
     if (Array.isArray(children)) {
@@ -202,6 +244,9 @@ function parseFeatures (featureCollection) {
             else if (e.name === 'gml:boundedBy') {
                 a.bbox = parseBoundedBy(e);
             }
+            else if (e.name === 'wfs:member') {
+                a.features.push(parseWfsMember(e));
+            }            
             return a;
         }, {type: 'FeatureCollection', features: []});
     }

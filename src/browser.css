@@ -5,10 +5,20 @@ html, body {
 .scanex-svc-view {
     width: 400px;
 }
-#sidebar, #map {
-    float: left;
-}
-#map {
+#main {
     width: 100%;
+}
+#main > tbody > tr > td {
+    vertical-align: top;
+}
+#main > tbody > tr > td:last-child {
+    width: 100%;
+}
+#map {    
     height: 100vh;
+}
+
+#sidebar {
+    overflow-y: auto;
+    max-height: 100vh;
 }
