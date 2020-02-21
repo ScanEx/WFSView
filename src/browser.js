@@ -16,5 +16,6 @@ window.addEventListener('load', () => {
       props: {
          map
       }
-   });   
+   });
+
 });

@@ -25,7 +25,18 @@ const parseExGeographicBoundingBox = node => {
 const parseStyle = node => {
     const {children} = node;
     if (Array.isArray(children)) {
-        return children.reduce((a,e) => {}, {});
+        return children.reduce((a,e) => {
+            if (e.localName === 'LegendURL' && e.attributes) {                
+                const {width, height} = e.attributes;
+                if (width) {
+                    a.width = parseInt(width, 10);
+                }
+                if (height) {
+                    a.height = parseInt(height, 10);
+                }
+            }
+            return a;
+        }, {});
     }
     else {
         return null;
@@ -34,44 +45,51 @@ const parseStyle = node => {
 
 const toLayer = node => {
     let r = {};
-    for (const n of node.children) {
-        const {localName, name} = n;        
-        switch(localName) {            
-            case 'Layer':
-                if (r.children) {
-                    r.children.push(toLayer(n));
-                }
-                else {
-                    r.children = [toLayer(n)];
-                }
-                break;
-            case 'Style':
-                break;
-            case 'CRS':
-                if (r.crs) {
-                    r.crs.push(n.value);
-                }
-                else {
-                    r.crs = [n.value];
-                }
-                break;
-            case 'EX_GeographicBoundingBox':
-                r.exGeographicBoundingBox = parseExGeographicBoundingBox(n);
-                break;
-            case 'BoundingBox':
-                if (r[uncap(name)]) {
-                    r[uncap(name)].push(n.attributes);
-                }
-                else {
-                    r[uncap(name)] = [n.attributes];
-                }               
-                break;
-            default:
-                r[uncap(name)] = n.value;
-                break;
-        }
+    const {children} = node;
+    if(Array.isArray(children)) {
+        return children.reduce((a,e) => {
+            const {localName, name} = e;
+            switch(localName) {            
+                case 'Layer':
+                    if (a.children) {
+                        a.children.push(toLayer(e));
+                    }
+                    else {
+                        a.children = [toLayer(e)];
+                    }
+                    break;
+                case 'Style':
+                    a = {...a, ...parseStyle(e)};
+                    break;
+                case 'CRS':
+                    if (a.crs) {
+                        a.crs.push(e.value);
+                    }
+                    else {
+                        a.crs = [e.value];
+                    }
+                    break;
+                case 'EX_GeographicBoundingBox':
+                    a.exGeographicBoundingBox = parseExGeographicBoundingBox(e);
+                    break;
+                case 'BoundingBox':
+                    if (a[uncap(name)]) {
+                        a[uncap(name)].push(e.attributes);
+                    }
+                    else {
+                        a[uncap(name)] = [e.attributes];
+                    }               
+                    break;
+                default:
+                    a[uncap(name)] = e.value;
+                    break;
+            }
+            return a;
+        }, {});
     }
-    return r;
+    else {
+        return null;
+    }    
 };
 
 const toLayers = ({children}) => {
@@ -93,36 +111,41 @@ const toLayers = ({children}) => {
     }, {});
 };
 
-const toFeature = node => {
-    let r = {};
-    for (const n of node.children) {
-        const {localName, name} = n;
-        switch(localName) {
-            case 'Title':
-                r.title = n.value;
-                r[uncap(name)] = n.value;
-                break;
-            case 'Name':            
-            case 'Abstract':
-            case 'DefaultSRS':
-                r[uncap(name)] = n.value;
-                break;
-            case 'OtherSRS':
-                if (r[uncap(name)]) {
-                    r[uncap(name)].push(n.value);
-                }
-                else {
-                    r[uncap(name)] = [n.value];
-                }
-                break;            
-            case 'WGS84BoundingBox':                
-                r.wgs84BoundingBox = parseNode(n);
-                break;
-            default:
-                break;
-        }
+const toFeature = node => {    
+    const {children} = node;
+    if (Array.isArray(children)) {
+        return children.reduce((a,e) => {
+            const {localName, name} = e;
+            switch(localName) {
+                case 'Title':
+                    a.title = e.value;
+                    a[uncap(name)] = e.value;
+                    break;
+                case 'Name':            
+                case 'Abstract':
+                case 'DefaultSRS':
+                    a[uncap(name)] = e.value;
+                    break;
+                case 'OtherSRS':
+                    if (a[uncap(name)]) {
+                        a[uncap(name)].push(e.value);
+                    }
+                    else {
+                        a[uncap(name)] = [e.value];
+                    }
+                    break;            
+                case 'WGS84BoundingBox':                
+                    a.wgs84BoundingBox = parseNode(e);
+                    break;
+                default:
+                    break;
+            }
+            return a;
+        }, {});
     }
-    return r;
+    else {
+        return null;
+    }
 };
 
 const parseServiceIdentification = node => {

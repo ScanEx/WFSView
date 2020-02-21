@@ -12,6 +12,7 @@
     import parseFeatures from './gml.js';
     import {serviceProxy} from './config.json';
     import './icons.css';
+    import 'core-js/stable';
 
     const translate = T.getText.bind(T);
     const dispatch = createEventDispatcher();
@@ -104,69 +105,195 @@
         }
     }
 
-    async function getFeature (name, visible, url) {
-        if (map) {            
-            const u = `${url.origin}${url.pathname}`;
-            const link = links[u];
-            if (visible) {                
-                if (link && link[name]) {                    
-                    const {layer} = link[name];
-                    if (layer && !link[name].visible) {
-                        layer.addTo(map);
-                        const bounds = layer.getBounds();
-                        map.fitBounds(bounds);
-                        links[u][name].visible = true;
+    function getFeature (name, visible, url) {
+        return new Promise((resolve, reject) => {
+            if (map) {            
+                const u = `${url.origin}${url.pathname}`;
+                const link = links[u];
+                if (visible) {                
+                    if (link && link[name]) {                    
+                        const {layer} = link[name];
+                        if (layer && !link[name].visible) {
+                            layer.addTo(map);
+                            const bounds = layer.getBounds();
+                            map.fitBounds(bounds);
+                            links[u][name].visible = true;
+                        }
+                        resolve();
                     }
+                    else {                    
+                        if(url.searchParams.has('request')) {
+                            url.searchParams.set('request', 'GetFeature');
+                        }
+                        else {                        
+                            url.searchParams.append('request', 'GetFeature');
+                        }
+                        if (url.searchParams.has('service')) {
+                            url.searchParams.set('service', 'WFS');
+                        }
+                        else {
+                            url.searchParams.append('service', 'WFS');
+                        }
+                        if (url.searchParams.has('typeName')) {
+                            url.searchParams.set('typeName', name);
+                        }
+                        else {
+                            url.searchParams.append('typeName', name);
+                        }
+                        if (url.searchParams.has('version')) {
+                            url.searchParams.set('version', '1.0.0');
+                        }
+                        else {
+                            url.searchParams.append('version', '1.0.0');
+                        }
+                        getxml(url.toString())
+                        .then(data => {
+                            const featureCollection = xml2json(data);
+                            const layer = drawFeatures(featureCollection);
+                            const bounds = layer.getBounds();
+                            map.fitBounds(bounds);
+                            links[u] = links[u] || {};
+                            links[u][name] = { data, layer, visible: true };
+                            resolve();
+                        })
+                        .catch(e => {
+                            reject(e);
+                        });                        
+                    }                
                 }
-                else {                    
-                    if(url.searchParams.has('request')) {
-                        url.searchParams.set('request', 'GetFeature');
+                else if (link && link[name]) {                
+                    const {layer} = link[name];
+                    if (layer) {
+                        layer.remove();
+                        links[u][name].visible = false;
                     }
-                    else {                        
-                        url.searchParams.append('request', 'GetFeature');
-                    }
-                    if (url.searchParams.has('service')) {
-                        url.searchParams.set('service', 'WFS');
-                    }
-                    else {
-                        url.searchParams.append('service', 'WFS');
-                    }
-                    if (url.searchParams.has('typeName')) {
-                        url.searchParams.set('typeName', name);
-                    }
-                    else {
-                        url.searchParams.append('typeName', name);
-                    }
-                    if (url.searchParams.has('version')) {
-                        url.searchParams.set('version', '1.0.0');
-                    }
-                    else {
-                        url.searchParams.append('version', '1.0.0');
-                    }
-                    const data = await getxml(url.toString());
-                    const featureCollection = xml2json(data);
-                    const layer = drawFeatures(featureCollection);
-                    const bounds = layer.getBounds();
-                    map.fitBounds(bounds);
-                    links[u] = links[u] || {};
-                    links[u][name] = { data, layer, visible: true };
+                    resolve();
                 }                
             }
-            else if (link && link[name]) {                
-                const {layer} = link[name];
-                if (layer) {
-                    layer.remove();
-                    links[u][name].visible = false;
-                }
+            else {
+                reject(new Error('map not defined'));
             }
-        }
+        });        
     }
 
     function getScale (z) {
         return Math.pow(2, -z)*156543.033928041;
     }
 
-    async function getMap ({name, bbox, visible, url}) {
+    function getFeatureInfo (name, visible, url, width, height, crs) {
+        return new Promise((resolve, reject) => {
+            if (map) {            
+                const u = `${url.origin}${url.pathname}`;
+                const link = links[u];
+                if (visible) {                
+                    if (link && link[name]) {                    
+                        const {layer} = link[name];
+                        if (layer && !link[name].visible) {
+                            layer.addTo(map);
+                            const bounds = layer.getBounds();
+                            map.fitBounds(bounds);
+                            links[u][name].visible = true;
+                        }
+                        resolve();
+                    }
+                    else {                    
+                        if(url.searchParams.has('request')) {
+                            url.searchParams.set('request', 'GetFeatureInfo');
+                        }
+                        else {                        
+                            url.searchParams.append('request', 'GetFeatureInfo');
+                        }
+                        if (url.searchParams.has('service')) {
+                            url.searchParams.set('service', 'WMS');
+                        }
+                        else {
+                            url.searchParams.append('service', 'WMS');
+                        }
+                        if (url.searchParams.has('layers')) {
+                            url.searchParams.set('layers', name);
+                        }
+                        else {
+                            url.searchParams.append('layers', name);
+                        }
+                        if (url.searchParams.has('query_layers')) {
+                            url.searchParams.set('query_layers', name);
+                        }
+                        else {
+                            url.searchParams.append('query_layers', name);
+                        }
+                        if (url.searchParams.has('version')) {
+                            url.searchParams.set('version', '1.3.0');
+                        }
+                        else {
+                            url.searchParams.append('version', '1.3.0');
+                        }
+                        if (url.searchParams.has('info_format')) {
+                            url.searchParams.set('info_format', 'JSON');
+                        }
+                        else {
+                            url.searchParams.append('info_format', 'JSON');
+                        }
+                        if (url.searchParams.has('i')) {
+                            url.searchParams.set('i', '0');
+                        }
+                        else {
+                            url.searchParams.append('i', '0');
+                        }
+                        if (url.searchParams.has('j')) {
+                            url.searchParams.set('j', '0');
+                        }
+                        else {
+                            url.searchParams.append('j', '0');
+                        }
+                        if (url.searchParams.has('width')) {
+                            url.searchParams.set('width', width);
+                        }
+                        else {
+                            url.searchParams.append('width', width);
+                        }
+                        if (url.searchParams.has('height')) {
+                            url.searchParams.set('height', height);
+                        }
+                        else {
+                            url.searchParams.append('height', height);
+                        }
+                        if (url.searchParams.has('crs')) {
+                            url.searchParams.set('crs', 'EPSG:3857');
+                        }
+                        else {
+                            url.searchParams.append('crs', 'EPSG:3857');
+                        }
+                        getxml(url.toString())
+                        .then(data => {
+                            const featureCollection = xml2json(data);
+                            // const layer = drawFeatures(featureCollection);
+                            // const bounds = layer.getBounds();
+                            // map.fitBounds(bounds);
+                            // links[u] = links[u] || {};
+                            // links[u][name] = { data, layer, visible: true };
+                            resolve();
+                        })
+                        .catch(e => {
+                            reject(e);
+                        });                        
+                    }                
+                }
+                else if (link && link[name]) {                
+                    const {layer} = link[name];
+                    if (layer) {
+                        layer.remove();
+                        links[u][name].visible = false;
+                    }
+                    resolve();
+                }                
+            }
+            else {
+                reject(new Error('map not defined'));
+            }
+        });  
+    }
+
+    function getMap ({name, bbox, visible, url}) {
         if (map) {
             const u = `${url.origin}${url.pathname}`;
             const link = links[u];
@@ -175,11 +302,12 @@
                     const {layer} = link[name];
                     if (layer && !link[name].visible) {
                         layer.addTo(map);
-                        links[u][name].visible = true;
-                        map.fitBounds([[bbox.maxy,bbox.minx],[bbox.miny,bbox.maxx]]);
-                    }
+                        links[u][name].visible = true;                        
+                        map.fitBounds([[bbox.maxy,bbox.minx],[bbox.miny,bbox.maxx]]);                        
+                    }                    
                 }
                 else {
+
                     const bs = map.getBounds();  
                     let miny = Math.max(bs.getSouth(), -90);
                     let maxy = Math.min(bs.getNorth(), 90);
@@ -200,7 +328,7 @@
                     const scale = getScale(map.getZoom());
                     const width = Math.round((mercMax.x - mercMin.x)/scale);
                     const height = Math.round((mercMax.y - mercMin.y)/scale);
-                    
+
                     if(url.searchParams.has('request')) {
                         url.searchParams.delete('request');
                     }                    
@@ -219,7 +347,7 @@
                         transparent: true,
                         attribution: ""
                     });                    
-                    layer.addTo(map);                    
+                    layer.addTo(map);   
                     map.fitBounds([[bbox.maxy,bbox.minx],[bbox.miny,bbox.maxx]]);
                     links[u] = links[u] || {};
                     links[u][name] = { layer, visible };
@@ -235,90 +363,104 @@
         }
     }
 
-    async function addwfs (value) {
-        const url = new URL(value);
-        if (url.searchParams.has('service')) {
-            url.searchParams.set('service', 'WFS');
-        }
-        else {
-            url.searchParams.append('service', 'WFS');
-        }
-        if (url.searchParams.has('request')) {
-            url.searchParams.set('request', 'GetCapabilities');
-        }
-        else {
-            url.searchParams.append('request', 'GetCapabilities');
-        }
-        if (!url.searchParams.has('version')) {
-            url.searchParams.append('version', '1.3.0');
-        }        
-        const u = url.toString();
-        const data = await getxml (u);
-        const featureCollection = xml2json(data);
-        const {title, features} = toFeatures(featureCollection);
-        const lnk = new WFS({
-            target: linksContainer,
-            props: { features, title }
-        });
-        lnk.$on('close', () => {
-            lnk.$destroy();
-            closeLink(url);
-        });
-        lnk.$on('change:visible', async ({detail}) => {            
-            const {name, visible} = detail;
-            try {
-                dispatch('request:start');
-                await getFeature(name, visible, url);
-                dispatch('request:end');
+    function addwfs (value) {
+        return new Promise((resolve, reject) => {
+            const url = new URL(value);
+            if (url.searchParams.has('service')) {
+                url.searchParams.set('service', 'WFS');
             }
-            catch(e) {
-                dispatch('request:error');
-            } 
-        });
+            else {
+                url.searchParams.append('service', 'WFS');
+            }
+            if (url.searchParams.has('request')) {
+                url.searchParams.set('request', 'GetCapabilities');
+            }
+            else {
+                url.searchParams.append('request', 'GetCapabilities');
+            }
+            if (!url.searchParams.has('version')) {
+                url.searchParams.append('version', '1.3.0');
+            }        
+            const u = url.toString();        
+            getxml(u)
+            .then(data => {
+                const featureCollection = xml2json(data);
+                const {title, features} = toFeatures(featureCollection);
+                const lnk = new WFS({
+                    target: linksContainer,
+                    props: { features, title }
+                });
+                lnk.$on('close', () => {
+                    lnk.$destroy();
+                    closeLink(url);
+                });
+                lnk.$on('change:visible', ({detail}) => {
+                    const {name, visible} = detail;
+                    dispatch('request:start');
+                    getFeature(name, visible, url)
+                    .then(() => dispatch('request:end'))
+                    .catch(e => dispatch('request:error'));           
+                });
+                resolve();           
+            })
+            .catch(e => reject(e));
+        });           
     }
 
-    async function addwms (value) {
-        const url = new URL(value);
-        if (!url.searchParams.has('service')) {
-            url.searchParams.append('service', 'WMS');
-        }
-        if (!url.searchParams.has('request')) {
-            url.searchParams.append('request', 'GetCapabilities');
-        }
-        if (!url.searchParams.has('version')) {
-            url.searchParams.append('version', '1.3.0');
-        }
-        const data = await getxml (url.toString());
-        const layerCollection = xml2json(data);
-        const {title, layers} = toLayers(layerCollection);
-        const lnk = new WMS({
-            target: linksContainer,
-            props: { layers, title }
-        });
-        lnk.$on('close', () => {
-            lnk.$destroy();
-            closeLink(url);
-        });
-        lnk.$on('change:visible', async ({detail}) => {   
-            const {name, visible, exGeographicBoundingBox, crs} = detail;
-            if (exGeographicBoundingBox) {
-                const { eastBoundLongitude, northBoundLatitude, southBoundLatitude, westBoundLongitude } = exGeographicBoundingBox;
-                const bbox = {
-                    miny: southBoundLatitude,
-                    maxy: northBoundLatitude,
-                    minx: westBoundLongitude,
-                    maxx: eastBoundLongitude,
-                };                
-                try {
-                    dispatch('request:start');
-                    await getMap({name, visible, bbox, url, crs});
-                    dispatch('request:end');
-                }
-                catch(e) {
-                    dispatch('request:error');
-                }
-            }            
-        });
+    function addwms (value) {
+        return new Promise((resolve, reject) => {
+            const url = new URL(value);
+            if (!url.searchParams.has('service')) {
+                url.searchParams.append('service', 'WMS');
+            }
+            if (!url.searchParams.has('request')) {
+                url.searchParams.append('request', 'GetCapabilities');
+            }
+            if (!url.searchParams.has('version')) {
+                url.searchParams.append('version', '1.3.0');
+            }
+            getxml (url.toString())
+            .then(data => {
+                const layerCollection = xml2json(data);
+                const {title, layers} = toLayers(layerCollection);
+                const lnk = new WMS({
+                    target: linksContainer,
+                    props: { layers, title }
+                });
+                lnk.$on('close', () => {
+                    lnk.$destroy();
+                    closeLink(url);
+                });
+                lnk.$on('change:visible', ({detail}) => {
+                    const {name, visible, exGeographicBoundingBox, width, height, crs} = detail;
+                    if (exGeographicBoundingBox) {
+                        const { eastBoundLongitude, northBoundLatitude, southBoundLatitude, westBoundLongitude } = exGeographicBoundingBox;
+                        const bbox = {
+                            miny: southBoundLatitude,
+                            maxy: northBoundLatitude,
+                            minx: westBoundLongitude,
+                            maxx: eastBoundLongitude,
+                        };                
+                        try {
+                            dispatch('request:start');
+                            getMap({name, visible, bbox, url, crs});
+                            dispatch('request:end');
+                        }
+                        catch(e) {
+                            dispatch('request:error');
+                        }                                                
+                    }
+                    else if (width && height) {
+                        dispatch('request:start');
+                        getFeatureInfo(name, visible, url, width, height, crs)
+                        .then(() => dispatch('request:end'))
+                        .catch(e => dispatch('request:error'));
+                    }                                      
+                });
+                resolve();                
+            })
+            .catch(e => reject(e));
+        });               
     }
 
     let header;
@@ -334,18 +476,12 @@
             props: { title: translate('link.wfs'), top, left }
         });
         dlg.$on('close', () => dlg.$destroy());        
-        dlg.$on('ok', async ({detail}) => {
+        dlg.$on('ok', ({detail}) => {
             const value = detail;
             dlg.$destroy();
-            if (value) {
-                try {
-                    dispatch('request:start');
-                    await addwfs(value);
-                    dispatch('request:end');
-                }
-                catch(e) {
-                    dispatch('request:error');
-                }             
+            if (value) {                
+                dispatch('request:start');
+                addwfs(value).then(() => dispatch('request:end')).catch(e => dispatch('request:error', e));
             }
         });                      
     }
@@ -360,22 +496,17 @@
             props: { title: translate('link.wms'), top, left }
         });
         dlg.$on('close', () => dlg.$destroy());        
-        dlg.$on('ok', async ({detail}) => {
+        dlg.$on('ok', ({detail}) => {
             const value = detail;            
             dlg.$destroy();
-            if (value) {
-                try {
-                    dispatch('request:start');
-                    await addwms(value);
-                    dispatch('request:end');
-                }
-                catch(e) {
-                    dispatch('request:error');
-                }
+            if (value) {                
+                dispatch('request:start');
+                addwms(value).then(() => dispatch('request:end')).catch(e => dispatch('request:error', e));                
             }
         });                      
     }    
 </script>
+
 <div class="scanex-svc-view">
     <div class="header" bind:this="{header}">
         <button on:click|stopPropagation="{getwfs}">WFS</button>
