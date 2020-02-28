@@ -1,17 +1,21 @@
-const parse_node = node => {
+function parse_node (node) {    
     const {nodeName, localName} = node;
-    let r = { name: nodeName, localName };
+    let r = { name: nodeName, localName };    
     const attributes = {};
-    for (const a of node.attributes) {                
+    for (let i = 0; i < node.attributes.length; ++i) {
+        const a = node.attributes[i];
         attributes[a.name] = a.value;
     }
     if (Object.keys(attributes).length) {
         r.attributes = attributes;
-    }
-    const children = [];
-    for (const n of node.children) {
-        children.push(parse_node(n));
-    }
+    }    
+    const children = [];        
+    for(let i = 0; i < node.childNodes.length; ++i) {
+        const n = node.childNodes[i];
+        if (n.nodeType === 1) {
+            children.push(parse_node(n));
+        }        
+    }    
     if (children.length) {
         r.children = children;
     }
@@ -21,9 +25,8 @@ const parse_node = node => {
     return r;
 };
 
-const parse = xml => {
-    const [root] = xml.children;
-    return parse_node(root);
+function parse  (xml) {        
+    return parse_node(xml.childNodes[0]);
 };
 
 export default parse;

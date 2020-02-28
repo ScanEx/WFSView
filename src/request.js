@@ -2,7 +2,7 @@ import {serviceProxy} from './config.json';
 
 const getxml = url => new Promise((resolve, reject) => {
     try {
-        const xhr = new XMLHttpRequest();            
+        const xhr = new XMLHttpRequest();        
         xhr.addEventListener('load', () => {
             if (xhr.status === 200) {                         
                 resolve (xhr.responseXML);

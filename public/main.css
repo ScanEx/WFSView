@@ -710,6 +710,38 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .scanex-svc-view .minus-square, .scanex-svc-view-dialog .minus-square {background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='64 64 896 896' focusable='false' class='' data-icon='minus-square' width='18px' height='18px' fill='%234682B4' stroke='%234682B4' stroke-width='2%25' aria-hidden='true'%3e %3cpath d='M328 544h368c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H328c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8z'%3e%3c/path%3e%3cpath d='M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z'%3e%3c/path%3e %3c/svg%3e");}
 .scanex-svc-view .plus-square, .scanex-svc-view-dialog .plus-square {background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='64 64 896 896' focusable='false' class='' data-icon='plus-square' width='18px' height='18px' fill='currentColor' aria-hidden='true'%3e%3cpath d='M328 544h152v152c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V544h152c4.4 0 8-3.6 8-8v-48c0-4.4-3.6-8-8-8H544V328c0-4.4-3.6-8-8-8h-48c-4.4 0-8 3.6-8 8v152H328c-4.4 0-8 3.6-8 8v48c0 4.4 3.6 8 8 8z'%3e%3c/path%3e%3cpath d='M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z'%3e%3c/path%3e%3c/svg%3e");}
 .scanex-svc-view .square, .scanex-svc-view-dialog .square {background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='64 64 896 896' focusable='false' class='' data-icon='minus-square' width='18px' height='18px' fill='%234682B4' stroke='%234682B4' stroke-width='2%25' aria-hidden='true'%3e %3cpath d='M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656z'%3e%3c/path%3e %3c/svg%3e");}
+.scanex-svc-view .scanex-svc-view-link {
+    border-radius: 3px;    
+    border: 1px solid #778899;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    background-color: #FFFAF0;
+}
+.scanex-svc-view .scanex-svc-view-link > .header {
+    padding: 5px;
+    border-bottom: 1px solid #778899;
+    background-color: #F0F8FF;
+}
+.scanex-svc-view .scanex-svc-view-link > .header td {
+    vertical-align: top;
+}
+.scanex-svc-view .scanex-svc-view-link > .header .service {    
+    color: #4682B4;
+    border-radius: 4px;
+    font-weight: bold;
+    padding: 5px;
+    border: none;    
+    white-space: nowrap;
+    font-style: italic;
+}
+.scanex-svc-view .scanex-svc-view-link > .header .title {
+    padding-left: 10px;
+    padding-right: 10px;
+    word-break: break-all;
+}
+.scanex-svc-view .scanex-svc-view-link > .content {
+    padding: 10px;
+}
 .scanex-svc-view-dialog {
     position: absolute;
     width: 350px;
@@ -743,37 +775,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
     width: 100%;
     height: 25px;
 }
-.scanex-svc-view .scanex-svc-view-link {
-    border-radius: 3px;    
-    border: 1px solid #778899;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    background-color: #FFFAF0;
+.scanex-svc-view .feature .scanex-svc-view-visible {    
+    float: left;
 }
-.scanex-svc-view .scanex-svc-view-link > .header {
-    padding: 5px;
-    border-bottom: 1px solid #778899;
-    background-color: #F0F8FF;
+.scanex-svc-view .feature {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
 }
-.scanex-svc-view .scanex-svc-view-link > .header td {
+.scanex-svc-view .feature > * {
     vertical-align: top;
-}
-.scanex-svc-view .scanex-svc-view-link > .header .service {    
-    color: #4682B4;
-    border-radius: 4px;
-    font-weight: bold;
-    padding: 5px;
-    border: none;    
-    white-space: nowrap;
-    font-style: italic;
-}
-.scanex-svc-view .scanex-svc-view-link > .header .title {
-    padding-left: 10px;
-    padding-right: 10px;
-    word-break: break-all;
-}
-.scanex-svc-view .scanex-svc-view-link > .content {
-    padding: 10px;
 }
 .scanex-svc-view .layer .collapsed {
     display: none;
@@ -795,16 +806,5 @@ svg.leaflet-image-layer.leaflet-interactive path {
     cursor: pointer;
 }
 .scanex-svc-view .layer .header > * {
-    vertical-align: top;
-}
-.scanex-svc-view .feature .scanex-svc-view-visible {    
-    float: left;
-}
-.scanex-svc-view .feature {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    cursor: pointer;
-}
-.scanex-svc-view .feature > * {
     vertical-align: top;
 }

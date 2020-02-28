@@ -13,6 +13,9 @@
     import {serviceProxy} from './config.json';
     import './icons.css';
     import 'core-js/stable';
+    import 'regenerator-runtime';
+    import 'whatwg-fetch';
+    import 'url-search-params-polyfill';
 
     const translate = T.getText.bind(T);
     const dispatch = createEventDispatcher();
