@@ -52,9 +52,52 @@
 
     const renderer = L.canvas();
 
+    function getFeatureAttributes (url, name, id) {
+        return new Promise((resolve, reject) => {
+            if(url.searchParams.has('request')) {
+                url.searchParams.set('request', 'GetFeature');
+            }
+            else {                        
+                url.searchParams.append('request', 'GetFeature');
+            }
+            if (url.searchParams.has('service')) {
+                url.searchParams.set('service', 'WFS');
+            }
+            else {
+                url.searchParams.append('service', 'WFS');
+            }
+            if (url.searchParams.has('typeName')) {
+                url.searchParams.set('typeName', name);
+            }
+            else {
+                url.searchParams.append('typeName', name);
+            }
+            if (url.searchParams.has('featureID')) {
+                url.searchParams.set('featureID', id);
+            }
+            else {
+                url.searchParams.append('featureID', id);
+            }
+            if (url.searchParams.has('version')) {
+                url.searchParams.set('version', '2.0.0');
+            }
+            else {
+                url.searchParams.append('version', '2.0.0');
+            }
+            getxml(url.toString())
+            .then(data => {
+                const feature = xml2json(data);                
+                resolve(feature);
+            })
+            .catch(e => {
+                reject(e);
+            });
+        });        
+    }
+
     function createFeature (feature) {
         try {
-            const {geometry, properties} = feature;
+            const {geometry, properties} = feature;            
             const layer = L.geoJSON(feature, {
                 style: x => {                    
                     return {
@@ -78,7 +121,7 @@
             const featureCollection = parseFeatures(data);
             if (featureCollection) {
                 const {features, bbox} = featureCollection;                
-                const layers = features.map(createFeature).filter(e => e);                
+                const layers = features.map(f => createFeature(f)).filter(e => e);
                 const fg = L.featureGroup(layers)
                     .bindPopup(({feature: {properties}}) => {                        
                         return `<table class="scanex-svc-view-attr">
@@ -180,118 +223,118 @@
         return Math.pow(2, -z)*156543.033928041;
     }
 
-    function getFeatureInfo (name, visible, url, width, height, crs) {
-        return new Promise((resolve, reject) => {
-            if (map) {            
-                const u = `${url.origin}${url.pathname}`;
-                const link = links[u];
-                if (visible) {                
-                    if (link && link[name]) {                    
-                        const {layer} = link[name];
-                        if (layer && !link[name].visible) {
-                            layer.addTo(map);
-                            const bounds = layer.getBounds();
-                            map.fitBounds(bounds);
-                            links[u][name].visible = true;
-                        }
-                        resolve();
-                    }
-                    else {                    
-                        if(url.searchParams.has('request')) {
-                            url.searchParams.set('request', 'GetFeatureInfo');
-                        }
-                        else {                        
-                            url.searchParams.append('request', 'GetFeatureInfo');
-                        }
-                        if (url.searchParams.has('service')) {
-                            url.searchParams.set('service', 'WMS');
-                        }
-                        else {
-                            url.searchParams.append('service', 'WMS');
-                        }
-                        if (url.searchParams.has('layers')) {
-                            url.searchParams.set('layers', name);
-                        }
-                        else {
-                            url.searchParams.append('layers', name);
-                        }
-                        if (url.searchParams.has('query_layers')) {
-                            url.searchParams.set('query_layers', name);
-                        }
-                        else {
-                            url.searchParams.append('query_layers', name);
-                        }
-                        if (url.searchParams.has('version')) {
-                            url.searchParams.set('version', '1.3.0');
-                        }
-                        else {
-                            url.searchParams.append('version', '1.3.0');
-                        }
-                        if (url.searchParams.has('info_format')) {
-                            url.searchParams.set('info_format', 'JSON');
-                        }
-                        else {
-                            url.searchParams.append('info_format', 'JSON');
-                        }
-                        if (url.searchParams.has('i')) {
-                            url.searchParams.set('i', '0');
-                        }
-                        else {
-                            url.searchParams.append('i', '0');
-                        }
-                        if (url.searchParams.has('j')) {
-                            url.searchParams.set('j', '0');
-                        }
-                        else {
-                            url.searchParams.append('j', '0');
-                        }
-                        if (url.searchParams.has('width')) {
-                            url.searchParams.set('width', width);
-                        }
-                        else {
-                            url.searchParams.append('width', width);
-                        }
-                        if (url.searchParams.has('height')) {
-                            url.searchParams.set('height', height);
-                        }
-                        else {
-                            url.searchParams.append('height', height);
-                        }
-                        if (url.searchParams.has('crs')) {
-                            url.searchParams.set('crs', 'EPSG:3857');
-                        }
-                        else {
-                            url.searchParams.append('crs', 'EPSG:3857');
-                        }
-                        getxml(url.toString())
-                        .then(data => {
-                            const featureCollection = xml2json(data);
-                            // const layer = drawFeatures(featureCollection);
-                            // const bounds = layer.getBounds();
-                            // map.fitBounds(bounds);
-                            // links[u] = links[u] || {};
-                            // links[u][name] = { data, layer, visible: true };
-                            resolve();
-                        })
-                        .catch(e => {
-                            reject(e);
-                        });                        
-                    }                
-                }
-                else if (link && link[name]) {                
-                    const {layer} = link[name];
-                    if (layer) {
-                        layer.remove();
-                        links[u][name].visible = false;
-                    }
-                    resolve();
-                }                
-            }
-            else {
-                reject(new Error('map not defined'));
-            }
-        });  
-    }
+    // function getFeatureInfo (name, visible, url, width, height, crs) {
+    //     return new Promise((resolve, reject) => {
+    //         if (map) {            
+    //             const u = `${url.origin}${url.pathname}`;
+    //             const link = links[u];
+    //             if (visible) {                
+    //                 if (link && link[name]) {                    
+    //                     const {layer} = link[name];
+    //                     if (layer && !link[name].visible) {
+    //                         layer.addTo(map);
+    //                         const bounds = layer.getBounds();
+    //                         map.fitBounds(bounds);
+    //                         links[u][name].visible = true;
+    //                     }
+    //                     resolve();
+    //                 }
+    //                 else {                    
+    //                     if(url.searchParams.has('request')) {
+    //                         url.searchParams.set('request', 'GetFeatureInfo');
+    //                     }
+    //                     else {                        
+    //                         url.searchParams.append('request', 'GetFeatureInfo');
+    //                     }
+    //                     if (url.searchParams.has('service')) {
+    //                         url.searchParams.set('service', 'WMS');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('service', 'WMS');
+    //                     }
+    //                     if (url.searchParams.has('layers')) {
+    //                         url.searchParams.set('layers', name);
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('layers', name);
+    //                     }
+    //                     if (url.searchParams.has('query_layers')) {
+    //                         url.searchParams.set('query_layers', name);
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('query_layers', name);
+    //                     }
+    //                     if (url.searchParams.has('version')) {
+    //                         url.searchParams.set('version', '1.3.0');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('version', '1.3.0');
+    //                     }
+    //                     if (url.searchParams.has('info_format')) {
+    //                         url.searchParams.set('info_format', 'JSON');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('info_format', 'JSON');
+    //                     }
+    //                     if (url.searchParams.has('i')) {
+    //                         url.searchParams.set('i', '0');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('i', '0');
+    //                     }
+    //                     if (url.searchParams.has('j')) {
+    //                         url.searchParams.set('j', '0');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('j', '0');
+    //                     }
+    //                     if (url.searchParams.has('width')) {
+    //                         url.searchParams.set('width', width);
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('width', width);
+    //                     }
+    //                     if (url.searchParams.has('height')) {
+    //                         url.searchParams.set('height', height);
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('height', height);
+    //                     }
+    //                     if (url.searchParams.has('crs')) {
+    //                         url.searchParams.set('crs', 'EPSG:3857');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('crs', 'EPSG:3857');
+    //                     }
+    //                     getxml(url.toString())
+    //                     .then(data => {
+    //                         const featureCollection = xml2json(data);
+    //                         // const layer = drawFeatures(featureCollection);
+    //                         // const bounds = layer.getBounds();
+    //                         // map.fitBounds(bounds);
+    //                         // links[u] = links[u] || {};
+    //                         // links[u][name] = { data, layer, visible: true };
+    //                         resolve();
+    //                     })
+    //                     .catch(e => {
+    //                         reject(e);
+    //                     });                        
+    //                 }                
+    //             }
+    //             else if (link && link[name]) {                
+    //                 const {layer} = link[name];
+    //                 if (layer) {
+    //                     layer.remove();
+    //                     links[u][name].visible = false;
+    //                 }
+    //                 resolve();
+    //             }                
+    //         }
+    //         else {
+    //             reject(new Error('map not defined'));
+    //         }
+    //     });  
+    // }
 
     function getMap ({name, bbox, visible, url}) {
         if (map) {
@@ -432,7 +475,7 @@
                     closeLink(url);
                 });
                 lnk.$on('change:visible', ({detail}) => {
-                    const {name, visible, exGeographicBoundingBox, width, height, crs} = detail;
+                    const {name, visible, exGeographicBoundingBox, crs} = detail;
                     if (exGeographicBoundingBox) {
                         const { eastBoundLongitude, northBoundLatitude, southBoundLatitude, westBoundLongitude } = exGeographicBoundingBox;
                         const bbox = {
@@ -450,12 +493,12 @@
                             dispatch('request:error');
                         }                                                
                     }
-                    else if (width && height) {
-                        dispatch('request:start');
-                        getFeatureInfo(name, visible, url, width, height, crs)
-                        .then(() => dispatch('request:end'))
-                        .catch(e => dispatch('request:error'));
-                    }                                      
+                    // else if (width && height) {
+                    //     dispatch('request:start');
+                    //     getFeatureInfo(name, visible, url, width, height, crs)
+                    //     .then(() => dispatch('request:end'))
+                    //     .catch(e => dispatch('request:error'));
+                    // }                                      
                 });
                 resolve();                
             })
@@ -479,7 +522,7 @@
         dlg.$on('ok', ({detail}) => {
             const value = detail;
             dlg.$destroy();
-            if (value) {                
+            if (value) {
                 dispatch('request:start');
                 addwfs(value).then(() => dispatch('request:end')).catch(e => dispatch('request:error', e));
             }

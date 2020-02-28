@@ -26141,12 +26141,12 @@
         append(div0, button1);
         /*div0_binding*/
 
-        ctx[18](div0);
+        ctx[17](div0);
         append(div2, t3);
         append(div2, div1);
         /*div1_binding*/
 
-        ctx[19](div1);
+        ctx[18](div1);
         dispose = [listen(button0, "click", stop_propagation(
         /*getwfs*/
         ctx[2])), listen(button1, "click", stop_propagation(
@@ -26160,10 +26160,10 @@
         if (detaching) detach(div2);
         /*div0_binding*/
 
-        ctx[18](null);
+        ctx[17](null);
         /*div1_binding*/
 
-        ctx[19](null);
+        ctx[18](null);
         run_all(dispose);
       }
     };
@@ -26238,7 +26238,9 @@
         if (featureCollection) {
           var features = featureCollection.features,
               bbox = featureCollection.bbox;
-          var layers = features.map(createFeature).filter(function (e) {
+          var layers = features.map(function (f) {
+            return createFeature(f);
+          }).filter(function (e) {
             return e;
           });
           var fg = leafletSrc.featureGroup(layers).bindPopup(function (_ref) {
@@ -26326,121 +26328,119 @@
           reject(new Error("map not defined"));
         }
       });
-    }
+    } // function getFeatureInfo (name, visible, url, width, height, crs) {
+    //     return new Promise((resolve, reject) => {
+    //         if (map) {            
+    //             const u = `${url.origin}${url.pathname}`;
+    //             const link = links[u];
+    //             if (visible) {                
+    //                 if (link && link[name]) {                    
+    //                     const {layer} = link[name];
+    //                     if (layer && !link[name].visible) {
+    //                         layer.addTo(map);
+    //                         const bounds = layer.getBounds();
+    //                         map.fitBounds(bounds);
+    //                         links[u][name].visible = true;
+    //                     }
+    //                     resolve();
+    //                 }
+    //                 else {                    
+    //                     if(url.searchParams.has('request')) {
+    //                         url.searchParams.set('request', 'GetFeatureInfo');
+    //                     }
+    //                     else {                        
+    //                         url.searchParams.append('request', 'GetFeatureInfo');
+    //                     }
+    //                     if (url.searchParams.has('service')) {
+    //                         url.searchParams.set('service', 'WMS');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('service', 'WMS');
+    //                     }
+    //                     if (url.searchParams.has('layers')) {
+    //                         url.searchParams.set('layers', name);
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('layers', name);
+    //                     }
+    //                     if (url.searchParams.has('query_layers')) {
+    //                         url.searchParams.set('query_layers', name);
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('query_layers', name);
+    //                     }
+    //                     if (url.searchParams.has('version')) {
+    //                         url.searchParams.set('version', '1.3.0');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('version', '1.3.0');
+    //                     }
+    //                     if (url.searchParams.has('info_format')) {
+    //                         url.searchParams.set('info_format', 'JSON');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('info_format', 'JSON');
+    //                     }
+    //                     if (url.searchParams.has('i')) {
+    //                         url.searchParams.set('i', '0');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('i', '0');
+    //                     }
+    //                     if (url.searchParams.has('j')) {
+    //                         url.searchParams.set('j', '0');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('j', '0');
+    //                     }
+    //                     if (url.searchParams.has('width')) {
+    //                         url.searchParams.set('width', width);
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('width', width);
+    //                     }
+    //                     if (url.searchParams.has('height')) {
+    //                         url.searchParams.set('height', height);
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('height', height);
+    //                     }
+    //                     if (url.searchParams.has('crs')) {
+    //                         url.searchParams.set('crs', 'EPSG:3857');
+    //                     }
+    //                     else {
+    //                         url.searchParams.append('crs', 'EPSG:3857');
+    //                     }
+    //                     getxml(url.toString())
+    //                     .then(data => {
+    //                         const featureCollection = xml2json(data);
+    //                         // const layer = drawFeatures(featureCollection);
+    //                         // const bounds = layer.getBounds();
+    //                         // map.fitBounds(bounds);
+    //                         // links[u] = links[u] || {};
+    //                         // links[u][name] = { data, layer, visible: true };
+    //                         resolve();
+    //                     })
+    //                     .catch(e => {
+    //                         reject(e);
+    //                     });                        
+    //                 }                
+    //             }
+    //             else if (link && link[name]) {                
+    //                 const {layer} = link[name];
+    //                 if (layer) {
+    //                     layer.remove();
+    //                     links[u][name].visible = false;
+    //                 }
+    //                 resolve();
+    //             }                
+    //         }
+    //         else {
+    //             reject(new Error('map not defined'));
+    //         }
+    //     });  
+    // }
 
-    function getFeatureInfo(name, visible, url, width, height, crs) {
-      return new Promise(function (resolve, reject) {
-        if (map) {
-          var u = "".concat(url.origin).concat(url.pathname);
-          var link = links[u];
-
-          if (visible) {
-            if (link && link[name]) {
-              var layer = link[name].layer;
-
-              if (layer && !link[name].visible) {
-                layer.addTo(map);
-                var bounds = layer.getBounds();
-                map.fitBounds(bounds);
-                links[u][name].visible = true;
-              }
-
-              resolve();
-            } else {
-              if (url.searchParams.has("request")) {
-                url.searchParams.set("request", "GetFeatureInfo");
-              } else {
-                url.searchParams.append("request", "GetFeatureInfo");
-              }
-
-              if (url.searchParams.has("service")) {
-                url.searchParams.set("service", "WMS");
-              } else {
-                url.searchParams.append("service", "WMS");
-              }
-
-              if (url.searchParams.has("layers")) {
-                url.searchParams.set("layers", name);
-              } else {
-                url.searchParams.append("layers", name);
-              }
-
-              if (url.searchParams.has("query_layers")) {
-                url.searchParams.set("query_layers", name);
-              } else {
-                url.searchParams.append("query_layers", name);
-              }
-
-              if (url.searchParams.has("version")) {
-                url.searchParams.set("version", "1.3.0");
-              } else {
-                url.searchParams.append("version", "1.3.0");
-              }
-
-              if (url.searchParams.has("info_format")) {
-                url.searchParams.set("info_format", "JSON");
-              } else {
-                url.searchParams.append("info_format", "JSON");
-              }
-
-              if (url.searchParams.has("i")) {
-                url.searchParams.set("i", "0");
-              } else {
-                url.searchParams.append("i", "0");
-              }
-
-              if (url.searchParams.has("j")) {
-                url.searchParams.set("j", "0");
-              } else {
-                url.searchParams.append("j", "0");
-              }
-
-              if (url.searchParams.has("width")) {
-                url.searchParams.set("width", width);
-              } else {
-                url.searchParams.append("width", width);
-              }
-
-              if (url.searchParams.has("height")) {
-                url.searchParams.set("height", height);
-              } else {
-                url.searchParams.append("height", height);
-              }
-
-              if (url.searchParams.has("crs")) {
-                url.searchParams.set("crs", "EPSG:3857");
-              } else {
-                url.searchParams.append("crs", "EPSG:3857");
-              }
-
-              getxml(url.toString()).then(function (data) {
-                var featureCollection = parse(data); // const layer = drawFeatures(featureCollection);
-                // const bounds = layer.getBounds();
-                // map.fitBounds(bounds);
-                // links[u] = links[u] || {};
-                // links[u][name] = { data, layer, visible: true };
-
-                resolve();
-              }).catch(function (e) {
-                reject(e);
-              });
-            }
-          } else if (link && link[name]) {
-            var _layer2 = link[name].layer;
-
-            if (_layer2) {
-              _layer2.remove();
-
-              links[u][name].visible = false;
-            }
-
-            resolve();
-          }
-        } else {
-          reject(new Error("map not defined"));
-        }
-      });
-    }
 
     function getMap(_ref2) {
       var name = _ref2.name,
@@ -26500,7 +26500,7 @@
               url.searchParams.delete("version");
             }
 
-            var _layer3 = leafletSrc.tileLayer.wms("".concat(serviceProxy, "?").concat(encodeURIComponent(url.toString())), {
+            var _layer2 = leafletSrc.tileLayer.wms("".concat(serviceProxy, "?").concat(encodeURIComponent(url.toString())), {
               layers: name,
               styles: "",
               width: width,
@@ -26510,22 +26510,22 @@
               attribution: ""
             });
 
-            _layer3.addTo(map);
+            _layer2.addTo(map);
 
             map.fitBounds([[bbox.maxy, bbox.minx], [bbox.miny, bbox.maxx]]);
             links[u] = links[u] || {};
             links[u][name] = {
-              layer: _layer3,
+              layer: _layer2,
               visible: visible
             };
           }
         } else if (link && link[name]) {
           var _link$name = link[name],
-              _layer4 = _link$name.layer,
+              _layer3 = _link$name.layer,
               _visible = _link$name.visible;
 
-          if (_layer4 && _visible) {
-            _layer4.remove();
+          if (_layer3 && _visible) {
+            _layer3.remove();
 
             links[u][name].visible = false;
           }
@@ -26658,15 +26658,14 @@
               } catch (e) {
                 dispatch("request:error");
               }
-            } else if (width && height) {
-              dispatch("request:start");
-              getFeatureInfo(name, visible, url, width, height).then(function () {
-                return dispatch("request:end");
-              }).catch(function (e) {
-                return dispatch("request:error");
-              });
             }
-          });
+          }); // else if (width && height) {
+          //     dispatch('request:start');
+          //     getFeatureInfo(name, visible, url, width, height, crs)
+          //     .then(() => dispatch('request:end'))
+          //     .catch(e => dispatch('request:error'));
+          // }                                      
+
           resolve();
         }).catch(function (e) {
           return reject(e);
@@ -26765,7 +26764,7 @@
       if ("map" in $$props) $$invalidate(4, map = $$props.map);
     };
 
-    return [linksContainer, header, getwfs, getwms, map, links, dlg, translate, dispatch, closeLink, renderer, createFeature, drawFeatures, getFeature, getFeatureInfo, getMap, addwfs, addwms, div0_binding, div1_binding];
+    return [linksContainer, header, getwfs, getwms, map, links, dlg, translate, dispatch, closeLink, renderer, createFeature, drawFeatures, getFeature, getMap, addwfs, addwms, div0_binding, div1_binding];
   }
 
   var View =
